@@ -21,13 +21,19 @@ export function itemMetrics(item, realizations = []) {
   const realizedNominal = realizations.reduce((sum, r) => sum + num(r.qty) * num(r.actualUnitPrice), 0);
   const avgActualPrice = realizedQty > 0 ? realizedNominal / realizedQty : 0;
   const remainingQty = plannedQty - realizedQty;
+  // "remainingNominal" = uang budget yang belum terpakai.
   const remainingNominal = plannedSubtotal - realizedNominal;
+  // "remainingNeedAtPlan" = estimasi kebutuhan yang belum dibeli memakai harga rencana.
+  const remainingNeedAtPlan = Math.max(remainingQty, 0) * plannedUnitPrice;
+  const estimatedFinalAtPlan = realizedNominal + remainingNeedAtPlan;
+  const estimatedFinalVariance = plannedSubtotal - estimatedFinalAtPlan;
   const avgPriceVariance = realizedQty > 0 ? avgActualPrice - plannedUnitPrice : 0;
   const isOverBudget = realizedNominal > plannedSubtotal || realizedQty > plannedQty;
   const progress = plannedSubtotal > 0 ? Math.max(0, realizedNominal / plannedSubtotal) : 0;
   return {
     plannedQty, plannedUnitPrice, plannedSubtotal, realizedQty, realizedNominal,
-    avgActualPrice, remainingQty, remainingNominal, avgPriceVariance, isOverBudget, progress
+    avgActualPrice, remainingQty, remainingNominal, remainingNeedAtPlan,
+    estimatedFinalAtPlan, estimatedFinalVariance, avgPriceVariance, isOverBudget, progress
   };
 }
 
@@ -40,20 +46,32 @@ export function projectMetrics(items = [], realizations = []) {
   let budget = 0;
   let realized = 0;
   let overBudgetCount = 0;
+  let remainingNeedAtPlan = 0;
+  const category = {
+    Bahan: { budget: 0, realized: 0 },
+    Upah: { budget: 0, realized: 0 }
+  };
   const metrics = new Map();
   for (const item of items) {
     const m = itemMetrics(item, byItem.get(item.id) || []);
     metrics.set(item.id, m);
     budget += m.plannedSubtotal;
     realized += m.realizedNominal;
+    remainingNeedAtPlan += m.remainingNeedAtPlan;
+    if (category[item.category]) {
+      category[item.category].budget += m.plannedSubtotal;
+      category[item.category].realized += m.realizedNominal;
+    }
     if (m.isOverBudget) overBudgetCount += 1;
   }
   return {
     budget,
     realized,
     remaining: budget - realized,
+    remainingNeedAtPlan,
     progress: budget > 0 ? realized / budget : 0,
     overBudgetCount,
+    category,
     itemMetrics: metrics
   };
 }
