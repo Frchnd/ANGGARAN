@@ -29,7 +29,9 @@ const icons = {
   more: '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>',
   close: '<svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>',
   cart: '<svg viewBox="0 0 24 24"><path d="M4 5h2l2 10h9l2-7H7M10 19h.01M17 19h.01"/></svg>',
-  box: '<svg viewBox="0 0 24 24"><path d="m4 8 8-4 8 4-8 4-8-4Zm0 0v8l8 4 8-4V8M12 12v8"/></svg>'
+  box: '<svg viewBox="0 0 24 24"><path d="m4 8 8-4 8 4-8 4-8-4Zm0 0v8l8 4 8-4V8M12 12v8"/></svg>',
+  calendar: '<svg viewBox="0 0 24 24"><path d="M6 3v3M18 3v3M4 8h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z"/></svg>',
+  chevron: '<svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>'
 };
 
 const navItems = [
@@ -38,6 +40,13 @@ const navItems = [
   ['activity', 'Realisasi', icons.activity],
   ['settings', 'Pengaturan', icons.settings]
 ];
+
+const BUILTIN_UNITS = [
+  'pcs', 'buah', 'unit', 'batang', 'lembar', 'sak', 'kg', 'gram', 'ton',
+  'liter', 'ml', 'm', 'cm', 'mm', 'm²', 'm³', 'roll', 'dus', 'box',
+  'set', 'pasang', 'titik', 'lot', 'hari', 'jam', 'orang', 'borongan'
+];
+const POPULAR_UNITS = ['pcs', 'sak', 'batang', 'kg', 'm', 'm²', 'm³', 'lembar', 'hari', 'unit'];
 
 function uid(prefix) {
   return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
@@ -150,11 +159,16 @@ function renderDashboard() {
         <div style="text-align:right"><span class="hero-label">TERPAKAI</span><strong>${pct}%</strong></div>
       </div>
     </div>
-    <div class="stats-grid">
+    <div class="stats-grid dashboard-stats">
       <div class="stat-card"><div class="label">Total Rencana</div><div class="value">${money(m.budget)}</div></div>
       <div class="stat-card"><div class="label">Realisasi</div><div class="value">${money(m.realized)}</div></div>
-      <div class="stat-card ${m.remaining < 0 ? 'danger' : 'success'}"><div class="label">Sisa</div><div class="value">${money(m.remaining)}</div></div>
+      <div class="stat-card ${m.remaining < 0 ? 'danger' : 'success'}"><div class="label">Sisa Anggaran</div><div class="value">${money(m.remaining)}</div></div>
+      <div class="stat-card"><div class="label">Estimasi Kebutuhan Tersisa</div><div class="value">${money(m.remainingNeedAtPlan)}</div></div>
       <div class="stat-card ${m.overBudgetCount ? 'danger' : ''}"><div class="label">Lewat Batas</div><div class="value">${m.overBudgetCount} item</div></div>
+    </div>
+    <div class="category-insight">
+      <div class="category-insight-card"><div><span>Bahan</span><strong>${money(m.category.Bahan.realized)}</strong></div><small>dari ${money(m.category.Bahan.budget)}</small></div>
+      <div class="category-insight-card"><div><span>Upah</span><strong>${money(m.category.Upah.realized)}</strong></div><small>dari ${money(m.category.Upah.budget)}</small></div>
     </div>
     <div class="action-row">
       <button class="action-card" data-action="new-realization" type="button">${icons.cart}<span>Catat realisasi</span></button>
@@ -227,7 +241,7 @@ function renderItemCard(item) {
   const m = itemMetrics(item, realizationsFor(item.id));
   const pct = Math.round(m.progress * 100);
   const varianceClass = m.avgPriceVariance > 0 ? 'negative' : m.avgPriceVariance < 0 ? 'positive-text' : '';
-  const varianceText = m.realizedQty ? `${m.avgPriceVariance > 0 ? '+' : ''}${money(m.avgPriceVariance)}/unit` : 'Belum ada';
+  const varianceText = m.realizedQty ? `${m.avgPriceVariance > 0 ? '+' : ''}${money(m.avgPriceVariance)}/${esc(item.unit)}` : 'Belum ada';
   return `<article class="item-card">
     <div class="item-top">
       <div class="item-main"><div class="item-name">${esc(item.name)}</div><div class="item-meta"><span class="badge">${esc(item.category)}</span><span>${number(item.plannedQty)} ${esc(item.unit)} × ${money(item.plannedUnitPrice)}</span></div></div>
@@ -237,10 +251,12 @@ function renderItemCard(item) {
       <div class="number-block"><span>Rencana</span><strong>${money(m.plannedSubtotal)}</strong></div>
       <div class="number-block"><span>Realisasi</span><strong class="${m.isOverBudget ? 'negative' : ''}">${money(m.realizedNominal)}</strong></div>
       <div class="number-block"><span>Sisa qty</span><strong class="${m.remainingQty < 0 ? 'negative' : ''}">${number(m.remainingQty)} ${esc(item.unit)}</strong></div>
+      <div class="number-block"><span>Sisa anggaran</span><strong class="${m.remainingNominal < 0 ? 'negative' : ''}">${money(m.remainingNominal)}</strong></div>
+      <div class="number-block"><span>Estimasi kebutuhan tersisa</span><strong>${money(m.remainingNeedAtPlan)}</strong></div>
       <div class="number-block"><span>Selisih harga rata²</span><strong class="${varianceClass}">${varianceText}</strong></div>
     </div>
     <div class="progress-track"><div class="progress-bar ${m.isOverBudget ? 'over' : ''}" style="width:${Math.min(m.progress*100,100)}%"></div></div>
-    <div class="progress-labels"><span>${pct}% nominal terpakai</span><span class="${m.remainingNominal < 0 ? 'danger-text' : ''}">${money(m.remainingNominal)} sisa</span></div>
+    <div class="progress-labels"><span>${pct}% nominal terpakai</span><span>${number(m.realizedQty)} / ${number(m.plannedQty)} ${esc(item.unit)}</span></div>
     <div class="card-actions"><button class="small-action" type="button" data-action="new-realization" data-item-id="${item.id}">Catat realisasi</button></div>
   </article>`;
 }
@@ -297,7 +313,7 @@ function renderSettings() {
       </div>
     </section>
     ${currentProject() ? `<section class="setting-card"><h3>Proyek aktif</h3><div class="info-row"><span>Nama</span><strong>${esc(currentProject().name)}</strong></div><div class="info-row"><span>Mulai</span><strong>${formatDate(currentProject().startDate)}</strong></div><button class="secondary-button" style="margin-top:12px" data-action="edit-project" type="button">Ubah proyek</button><button class="text-button danger" style="width:100%;margin-top:8px" data-action="delete-project" type="button">Hapus proyek ini</button></section>` : ''}
-    <p class="caption" style="text-align:center;margin-top:18px">ANGGARAN v0.2 · Offline-first · Tanpa akun</p>`;
+    <p class="caption" style="text-align:center;margin-top:18px">ANGGARAN v0.3 · Offline-first · Tanpa akun</p>`;
 }
 
 function bindViewEvents() {
@@ -342,6 +358,7 @@ function openSheet(title, content) {
   els.overlayRoot.querySelector('[data-close]').addEventListener('click', closeOverlay);
   document.addEventListener('keydown', onEsc, { once: true });
   bindNumberInputs(els.overlayRoot);
+  bindPickerButtons(els.overlayRoot);
   requestAnimationFrame(() => els.overlayRoot.querySelector('input, textarea, button')?.focus({preventScroll:true}));
 }
 
@@ -354,6 +371,19 @@ function openConfirm(title, message, confirmLabel, onConfirm) {
 
 function onEsc(e) { if (e.key === 'Escape') closeOverlay(); }
 function closeOverlay() { els.overlayRoot.innerHTML = ''; document.removeEventListener('keydown', onEsc); }
+
+function openSubSheet(title, content) {
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay sub-overlay';
+  overlay.dataset.subOverlay = '';
+  overlay.innerHTML = `<section class="sheet sub-sheet" role="dialog" aria-modal="true"><div class="sheet-head"><div class="sheet-title">${esc(title)}</div><button class="sheet-close" type="button" data-sub-close>${icons.close}</button></div><div class="sheet-body">${content}</div></section>`;
+  els.overlayRoot.appendChild(overlay);
+  const close = () => overlay.remove();
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  overlay.querySelector('[data-sub-close]').addEventListener('click', close);
+  requestAnimationFrame(() => overlay.querySelector('input, button')?.focus({preventScroll:true}));
+  return { overlay, close };
+}
 
 function openProjectChooser() {
   const rows = state.projects.map(p => `<button class="project-row ${p.id===state.currentProjectId?'active':''}" data-project-id="${p.id}" type="button"><div class="project-row-main"><strong>${esc(p.name)}</strong><span>${formatDate(p.startDate)} · ${p.status === 'active' ? 'Aktif' : 'Selesai'}</span></div>${p.id===state.currentProjectId?'<span class="dot-active"></span>':''}</button>`).join('');
@@ -370,7 +400,7 @@ function openProjectForm(project = null) {
   openSheet(project ? 'Ubah proyek' : 'Proyek baru', `
     <form id="projectForm" class="form-grid">
       <div class="field"><label for="projectName">Nama proyek</label><input class="input" id="projectName" name="name" maxlength="80" required autocomplete="off" placeholder="Contoh: Renovasi Rumah" value="${project ? esc(project.name) : ''}"></div>
-      <div class="field"><label for="projectDate">Tanggal mulai</label><input class="input" id="projectDate" name="startDate" type="date" required value="${project?.startDate || isoToday()}"></div>
+      <div class="field"><label>Tanggal mulai</label><input type="hidden" id="projectDate" name="startDate" value="${project?.startDate || isoToday()}"><button class="picker-button" type="button" data-date-picker data-target="projectDate"><span class="picker-icon">${icons.calendar}</span><span data-picker-value>${formatDate(project?.startDate || isoToday())}</span><span class="picker-chevron">${icons.chevron}</span></button></div>
       <div class="field"><label>Status</label><div class="segmented" id="projectStatus"><button type="button" data-status="active" class="${!project || project.status==='active'?'active':''}">Aktif</button><button type="button" data-status="done" class="${project?.status==='done'?'active':''}">Selesai</button></div></div>
       <div class="sheet-actions"><button class="primary-button" type="submit">${project ? 'Simpan perubahan' : 'Buat proyek'}</button></div>
     </form>`);
@@ -399,7 +429,7 @@ function openItemForm(item = null) {
     <form id="itemForm" class="form-grid">
       <div class="field"><label>Jenis</label><div class="segmented" id="itemCategory"><button type="button" data-item-category="Bahan" class="${!item || item.category==='Bahan'?'active':''}">Bahan</button><button type="button" data-item-category="Upah" class="${item?.category==='Upah'?'active':''}">Upah</button></div></div>
       <div class="field"><label for="itemName">Nama item</label><input class="input" id="itemName" name="name" maxlength="100" required autocomplete="off" placeholder="Contoh: Batu bata" value="${item ? esc(item.name) : ''}"></div>
-      <div class="field"><label for="itemUnit">Satuan</label><input class="input" id="itemUnit" name="unit" maxlength="20" required autocomplete="off" placeholder="pcs, sak, m², hari..." value="${item ? esc(item.unit) : ''}"></div>
+      <div class="field"><label>Satuan</label><input type="hidden" id="itemUnit" name="unit" value="${item ? esc(item.unit) : ''}"><button class="picker-button" type="button" data-unit-picker data-target="itemUnit"><span data-picker-value class="${item?.unit ? '' : 'picker-placeholder'}">${item?.unit ? esc(item.unit) : 'Pilih satuan'}</span><span class="picker-chevron">${icons.chevron}</span></button><div class="field-note">Pilih satuan umum atau buat satuan sendiri jika belum ada.</div></div>
       <div class="inline-fields">
         <div class="field"><label for="plannedQty">Qty rencana</label><input class="input" id="plannedQty" name="plannedQty" inputmode="decimal" data-number-mode="decimal" required placeholder="0" value="${formatNumberInputValue(item?.plannedQty, 'decimal')}"></div>
         <div class="field"><label for="plannedPrice">Harga / satuan</label><div class="input-prefix"><span>Rp</span><input class="input" id="plannedPrice" name="plannedUnitPrice" inputmode="numeric" data-number-mode="integer" required placeholder="0" value="${formatNumberInputValue(item?.plannedUnitPrice, 'integer')}"></div></div>
@@ -446,7 +476,7 @@ function openRealizationForm(initialItemId = null, realization = null) {
   openSheet(realization ? 'Ubah realisasi' : 'Catat realisasi', `
     <form id="realizationForm" class="form-grid">
       <div class="field"><label>Item anggaran</label><div class="search-field" style="margin-bottom:8px">${icons.search}<input id="itemPickerSearch" type="search" autocomplete="off" placeholder="Cari item"></div><div class="option-list" id="itemPickerList">${optionsHtml}</div></div>
-      <div class="field"><label for="realizationDate">Tanggal</label><input class="input" id="realizationDate" name="date" type="date" required value="${realization?.date || isoToday()}"></div>
+      <div class="field"><label>Tanggal</label><input type="hidden" id="realizationDate" name="date" value="${realization?.date || isoToday()}"><button class="picker-button" type="button" data-date-picker data-target="realizationDate"><span class="picker-icon">${icons.calendar}</span><span data-picker-value>${formatDate(realization?.date || isoToday())}</span><span class="picker-chevron">${icons.chevron}</span></button></div>
       <div class="inline-fields"><div class="field"><label for="realizationQty">Qty dibeli</label><input class="input" id="realizationQty" name="qty" inputmode="decimal" data-number-mode="decimal" required placeholder="0" value="${formatNumberInputValue(realization?.qty, 'decimal')}"></div><div class="field"><label for="actualPrice">Harga aktual / satuan</label><div class="input-prefix"><span>Rp</span><input class="input" id="actualPrice" name="actualUnitPrice" inputmode="numeric" data-number-mode="integer" required placeholder="0" value="${formatNumberInputValue(realization?.actualUnitPrice, 'integer')}"></div></div></div>
       <div class="field"><label for="realizationNote">Catatan <span style="font-weight:500">(opsional)</span></label><textarea class="textarea" id="realizationNote" name="note" maxlength="180" placeholder="Toko, kualitas barang, atau keterangan lain">${realization ? esc(realization.note || '') : ''}</textarea></div>
       <div class="sheet-actions"><button class="primary-button" type="submit">${realization ? 'Simpan perubahan' : 'Simpan realisasi'}</button></div>
@@ -493,6 +523,138 @@ function confirmDeleteProject() {
   openConfirm('Hapus proyek?', `${p.name}, seluruh item, dan seluruh realisasinya akan dihapus dari perangkat ini.`, 'Hapus proyek', async () => {
     await deleteProjectCascade(p.id); state.currentProjectId = null; await reloadData(); closeOverlay(); render(); toast('Proyek dihapus.');
   });
+}
+
+function bindPickerButtons(root) {
+  root.querySelectorAll('[data-unit-picker]').forEach(button => button.addEventListener('click', () => {
+    const input = document.getElementById(button.dataset.target);
+    if (input) openUnitPicker(input, button);
+  }));
+  root.querySelectorAll('[data-date-picker]').forEach(button => button.addEventListener('click', () => {
+    const input = document.getElementById(button.dataset.target);
+    if (input) openDatePicker(input, button);
+  }));
+}
+
+function openUnitPicker(input, trigger) {
+  const counts = new Map();
+  for (const item of state.items) {
+    const unit = String(item.unit || '').trim();
+    if (unit) counts.set(unit, (counts.get(unit) || 0) + 1);
+  }
+  const used = [...counts.entries()].sort((a,b) => b[1] - a[1] || a[0].localeCompare(b[0], 'id')).map(([unit]) => unit);
+  const all = [...new Set([...BUILTIN_UNITS, ...used])];
+  const popular = [...new Set([...used.slice(0, 4), ...POPULAR_UNITS])].slice(0, 10);
+  const current = input.value;
+
+  const { overlay, close } = openSubSheet('Pilih satuan', `
+    <div class="picker-search search-field">${icons.search}<input type="search" autocomplete="off" data-unit-search placeholder="Cari satuan"></div>
+    <div class="picker-section" data-popular-section>
+      <div class="picker-section-title">Sering dipakai</div>
+      <div class="unit-chips">${popular.map(unit => `<button class="unit-chip ${unit===current?'active':''}" type="button" data-unit-value="${esc(unit)}">${esc(unit)}</button>`).join('')}</div>
+    </div>
+    <div class="picker-section">
+      <div class="picker-section-title">Semua satuan</div>
+      <div class="unit-list" data-unit-list>${all.map(unit => `<button class="unit-option ${unit===current?'active':''}" type="button" data-unit-value="${esc(unit)}"><span>${esc(unit)}</span><span class="option-check"></span></button>`).join('')}</div>
+      <div class="empty-picker" data-unit-empty hidden>Satuan nggak ditemukan. Buat satuan sendiri di bawah.</div>
+    </div>
+    <div class="custom-unit-box">
+      <label for="customUnitInput">Satuan lainnya</label>
+      <div class="custom-unit-row"><input class="input" id="customUnitInput" maxlength="20" autocomplete="off" placeholder="Contoh: truk"><button class="secondary-button compact" type="button" data-use-custom>Gunakan</button></div>
+    </div>`);
+
+  const choose = value => {
+    const clean = String(value || '').trim();
+    if (!clean) return;
+    input.value = clean;
+    const label = trigger.querySelector('[data-picker-value]');
+    label.textContent = clean;
+    label.classList.remove('picker-placeholder');
+    close();
+  };
+
+  overlay.querySelectorAll('[data-unit-value]').forEach(btn => btn.addEventListener('click', () => choose(btn.dataset.unitValue)));
+  const search = overlay.querySelector('[data-unit-search]');
+  const rows = [...overlay.querySelectorAll('.unit-option')];
+  const empty = overlay.querySelector('[data-unit-empty]');
+  search.addEventListener('input', () => {
+    const q = search.value.trim().toLocaleLowerCase('id');
+    let visible = 0;
+    for (const row of rows) {
+      const show = row.dataset.unitValue.toLocaleLowerCase('id').includes(q);
+      row.hidden = !show;
+      if (show) visible += 1;
+    }
+    overlay.querySelector('[data-popular-section]').hidden = Boolean(q);
+    empty.hidden = visible !== 0;
+  });
+  const custom = overlay.querySelector('#customUnitInput');
+  const useCustom = () => choose(custom.value);
+  overlay.querySelector('[data-use-custom]').addEventListener('click', useCustom);
+  custom.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); useCustom(); } });
+}
+
+function parseISODate(value) {
+  const match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function dateToISO(date) {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+}
+
+function openDatePicker(input, trigger) {
+  const selected = parseISODate(input.value) || new Date();
+  let visibleMonth = new Date(selected.getFullYear(), selected.getMonth(), 1);
+  const { overlay, close } = openSubSheet('Pilih tanggal', `
+    <div class="calendar" data-calendar>
+      <div class="calendar-head">
+        <button class="calendar-nav" type="button" data-month="-1" aria-label="Bulan sebelumnya">‹</button>
+        <strong data-calendar-title></strong>
+        <button class="calendar-nav" type="button" data-month="1" aria-label="Bulan berikutnya">›</button>
+      </div>
+      <div class="calendar-week"><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span></div>
+      <div class="calendar-grid" data-calendar-grid></div>
+      <button class="secondary-button calendar-today" type="button" data-today>Hari ini</button>
+    </div>`);
+  const title = overlay.querySelector('[data-calendar-title]');
+  const grid = overlay.querySelector('[data-calendar-grid]');
+
+  const choose = date => {
+    const iso = dateToISO(date);
+    input.value = iso;
+    trigger.querySelector('[data-picker-value]').textContent = formatDate(iso);
+    close();
+  };
+
+  const draw = () => {
+    title.textContent = new Intl.DateTimeFormat('id-ID', { month:'long', year:'numeric' }).format(visibleMonth);
+    const year = visibleMonth.getFullYear();
+    const month = visibleMonth.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const offset = (firstDay.getDay() + 6) % 7;
+    const total = new Date(year, month + 1, 0).getDate();
+    const todayIso = isoToday();
+    const selectedIso = input.value;
+    let html = '';
+    for (let i=0; i<offset; i++) html += '<span class="calendar-blank"></span>';
+    for (let day=1; day<=total; day++) {
+      const date = new Date(year, month, day);
+      const iso = dateToISO(date);
+      html += `<button class="calendar-day ${iso===selectedIso?'selected':''} ${iso===todayIso?'today':''}" type="button" data-date="${iso}">${day}</button>`;
+    }
+    grid.innerHTML = html;
+    grid.querySelectorAll('[data-date]').forEach(btn => btn.addEventListener('click', () => choose(parseISODate(btn.dataset.date))));
+  };
+
+  overlay.querySelectorAll('[data-month]').forEach(btn => btn.addEventListener('click', () => {
+    visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + Number(btn.dataset.month), 1);
+    draw();
+  }));
+  overlay.querySelector('[data-today]').addEventListener('click', () => choose(parseISODate(isoToday())));
+  draw();
 }
 
 const BACKUP_SCHEMA_VERSION = 1;
@@ -602,7 +764,7 @@ async function createBackupFile() {
     const data = await exportDataSnapshot();
     const payload = {
       app: 'ANGGARAN',
-      version: '0.2',
+      version: '0.3',
       schemaVersion: BACKUP_SCHEMA_VERSION,
       exportedAt: new Date().toISOString(),
       data
