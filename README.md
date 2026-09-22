@@ -1,4 +1,4 @@
-# ANGGARAN v0.2
+# ANGGARAN v0.3
 
 PWA offline-first untuk menyusun RAB proyek konstruksi dan mencatat realisasi pembelian/pengeluaran.
 
@@ -41,3 +41,11 @@ Pengaturan menyediakan backup data ke file JSON dan restore penuh dari file back
 
 ## Input angka
 Semua kolom angka bisnis diformat langsung dengan format Indonesia saat mengetik. Contoh: `1000` → `1.000`, `10000` → `10.000`. Qty pecahan menggunakan koma, misalnya `1,5`.
+
+
+## v0.3
+- Picker satuan custom bertema ANGGARAN, dengan pencarian, satuan populer, satuan yang pernah dipakai, dan opsi satuan sendiri.
+- Date picker custom untuk tanggal proyek dan realisasi; tidak lagi memakai date picker bawaan browser.
+- Dashboard membedakan Sisa Anggaran dengan Estimasi Kebutuhan Tersisa.
+- Insight Bahan dan Upah ditampilkan terpisah.
+- Kartu item menampilkan sisa anggaran, sisa qty, estimasi kebutuhan tersisa, dan selisih harga rata-rata.
