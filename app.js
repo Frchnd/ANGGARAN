@@ -1,4 +1,4 @@
-import { getAll, getByIndex, put, remove, getSetting, setSetting, deleteProjectCascade, deleteItemCascade } from './db.js';
+import { getAll, getByIndex, put, remove, getSetting, setSetting, deleteProjectCascade, deleteItemCascade, exportDataSnapshot, restoreDataSnapshot } from './db.js';
 import { money, number, num, itemMetrics, projectMetrics } from './calc.js';
 
 const state = {
@@ -288,8 +288,16 @@ function renderSettings() {
       <div class="info-row"><span>Database</span><strong>IndexedDB</strong></div>
       <div class="info-row"><span>Server wajib</span><strong>Tidak</strong></div>
     </section>
+    <section class="setting-card">
+      <h3>Backup data</h3>
+      <p class="caption">Simpan salinan proyek ke file JSON. Restore akan mengganti seluruh data proyek di perangkat ini, tapi tidak mengubah pilihan tampilan Mobile/PC.</p>
+      <div class="data-actions">
+        <button class="primary-button" data-action="backup-data" type="button">Buat backup</button>
+        <button class="secondary-button" data-action="restore-data" type="button">Pulihkan backup</button>
+      </div>
+    </section>
     ${currentProject() ? `<section class="setting-card"><h3>Proyek aktif</h3><div class="info-row"><span>Nama</span><strong>${esc(currentProject().name)}</strong></div><div class="info-row"><span>Mulai</span><strong>${formatDate(currentProject().startDate)}</strong></div><button class="secondary-button" style="margin-top:12px" data-action="edit-project" type="button">Ubah proyek</button><button class="text-button danger" style="width:100%;margin-top:8px" data-action="delete-project" type="button">Hapus proyek ini</button></section>` : ''}
-    <p class="caption" style="text-align:center;margin-top:18px">ANGGARAN v0.1.1 · Offline-first · Tanpa akun</p>`;
+    <p class="caption" style="text-align:center;margin-top:18px">ANGGARAN v0.2 · Offline-first · Tanpa akun</p>`;
 }
 
 function bindViewEvents() {
@@ -323,6 +331,8 @@ async function handleAction(e) {
   if (action === 'item-menu') openItemMenu(id);
   if (action === 'new-realization') openRealizationForm(e.currentTarget.dataset.itemId || null);
   if (action === 'realization-menu') openRealizationMenu(id);
+  if (action === 'backup-data') createBackupFile();
+  if (action === 'restore-data') chooseBackupFile();
 }
 
 function openSheet(title, content) {
@@ -331,6 +341,7 @@ function openSheet(title, content) {
   overlay.addEventListener('click', e => { if (e.target === overlay) closeOverlay(); });
   els.overlayRoot.querySelector('[data-close]').addEventListener('click', closeOverlay);
   document.addEventListener('keydown', onEsc, { once: true });
+  bindNumberInputs(els.overlayRoot);
   requestAnimationFrame(() => els.overlayRoot.querySelector('input, textarea, button')?.focus({preventScroll:true}));
 }
 
@@ -390,8 +401,8 @@ function openItemForm(item = null) {
       <div class="field"><label for="itemName">Nama item</label><input class="input" id="itemName" name="name" maxlength="100" required autocomplete="off" placeholder="Contoh: Batu bata" value="${item ? esc(item.name) : ''}"></div>
       <div class="field"><label for="itemUnit">Satuan</label><input class="input" id="itemUnit" name="unit" maxlength="20" required autocomplete="off" placeholder="pcs, sak, m², hari..." value="${item ? esc(item.unit) : ''}"></div>
       <div class="inline-fields">
-        <div class="field"><label for="plannedQty">Qty rencana</label><input class="input" id="plannedQty" name="plannedQty" inputmode="decimal" required placeholder="0" value="${item ? item.plannedQty : ''}"></div>
-        <div class="field"><label for="plannedPrice">Harga / satuan</label><div class="input-prefix"><span>Rp</span><input class="input" id="plannedPrice" name="plannedUnitPrice" inputmode="numeric" required placeholder="0" value="${item ? item.plannedUnitPrice : ''}"></div></div>
+        <div class="field"><label for="plannedQty">Qty rencana</label><input class="input" id="plannedQty" name="plannedQty" inputmode="decimal" data-number-mode="decimal" required placeholder="0" value="${formatNumberInputValue(item?.plannedQty, 'decimal')}"></div>
+        <div class="field"><label for="plannedPrice">Harga / satuan</label><div class="input-prefix"><span>Rp</span><input class="input" id="plannedPrice" name="plannedUnitPrice" inputmode="numeric" data-number-mode="integer" required placeholder="0" value="${formatNumberInputValue(item?.plannedUnitPrice, 'integer')}"></div></div>
       </div>
       <div class="field-note">Subtotal rencana dihitung otomatis dari qty × harga satuan.</div>
       <div class="sheet-actions"><button class="primary-button" type="submit">${item ? 'Simpan perubahan' : 'Tambah ke anggaran'}</button></div>
@@ -436,7 +447,7 @@ function openRealizationForm(initialItemId = null, realization = null) {
     <form id="realizationForm" class="form-grid">
       <div class="field"><label>Item anggaran</label><div class="search-field" style="margin-bottom:8px">${icons.search}<input id="itemPickerSearch" type="search" autocomplete="off" placeholder="Cari item"></div><div class="option-list" id="itemPickerList">${optionsHtml}</div></div>
       <div class="field"><label for="realizationDate">Tanggal</label><input class="input" id="realizationDate" name="date" type="date" required value="${realization?.date || isoToday()}"></div>
-      <div class="inline-fields"><div class="field"><label for="realizationQty">Qty dibeli</label><input class="input" id="realizationQty" name="qty" inputmode="decimal" required placeholder="0" value="${realization?.qty ?? ''}"></div><div class="field"><label for="actualPrice">Harga aktual / satuan</label><div class="input-prefix"><span>Rp</span><input class="input" id="actualPrice" name="actualUnitPrice" inputmode="numeric" required placeholder="0" value="${realization?.actualUnitPrice ?? ''}"></div></div></div>
+      <div class="inline-fields"><div class="field"><label for="realizationQty">Qty dibeli</label><input class="input" id="realizationQty" name="qty" inputmode="decimal" data-number-mode="decimal" required placeholder="0" value="${formatNumberInputValue(realization?.qty, 'decimal')}"></div><div class="field"><label for="actualPrice">Harga aktual / satuan</label><div class="input-prefix"><span>Rp</span><input class="input" id="actualPrice" name="actualUnitPrice" inputmode="numeric" data-number-mode="integer" required placeholder="0" value="${formatNumberInputValue(realization?.actualUnitPrice, 'integer')}"></div></div></div>
       <div class="field"><label for="realizationNote">Catatan <span style="font-weight:500">(opsional)</span></label><textarea class="textarea" id="realizationNote" name="note" maxlength="180" placeholder="Toko, kualitas barang, atau keterangan lain">${realization ? esc(realization.note || '') : ''}</textarea></div>
       <div class="sheet-actions"><button class="primary-button" type="submit">${realization ? 'Simpan perubahan' : 'Simpan realisasi'}</button></div>
     </form>`);
@@ -482,6 +493,165 @@ function confirmDeleteProject() {
   openConfirm('Hapus proyek?', `${p.name}, seluruh item, dan seluruh realisasinya akan dihapus dari perangkat ini.`, 'Hapus proyek', async () => {
     await deleteProjectCascade(p.id); state.currentProjectId = null; await reloadData(); closeOverlay(); render(); toast('Proyek dihapus.');
   });
+}
+
+const BACKUP_SCHEMA_VERSION = 1;
+
+function groupIntegerDigits(value) {
+  const digits = String(value ?? '').replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+  if (!digits) return '';
+  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+function formatNumberInputValue(value, mode = 'integer') {
+  if (value === null || value === undefined || value === '') return '';
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return '';
+  return new Intl.NumberFormat('id-ID', {
+    useGrouping: true,
+    maximumFractionDigits: mode === 'decimal' ? 8 : 0
+  }).format(numeric);
+}
+
+function formatLiveNumberInput(input, event = null) {
+  const mode = input.dataset.numberMode || 'integer';
+  let raw = String(input.value ?? '').replace(/\s/g, '').replace(/[^\d.,]/g, '');
+
+  if (!raw) {
+    input.value = '';
+    return;
+  }
+
+  if (mode === 'integer') {
+    input.value = groupIntegerDigits(raw);
+  } else {
+    // For pasted decimal values like 1.5, accept the dot as decimal.
+    if (event?.inputType === 'insertFromPaste' && !raw.includes(',') && /^\d+\.\d+$/.test(raw) && !/^\d{1,3}(?:\.\d{3})+$/.test(raw)) {
+      const idx = raw.lastIndexOf('.');
+      raw = `${raw.slice(0, idx)},${raw.slice(idx + 1)}`;
+    }
+
+    const hasDecimal = raw.includes(',');
+    const [wholeRaw, ...fractionParts] = raw.split(',');
+    const whole = groupIntegerDigits(wholeRaw.replace(/\./g, '')) || '0';
+    const fraction = fractionParts.join('').replace(/\D/g, '');
+    input.value = hasDecimal ? `${whole},${fraction}` : whole;
+  }
+
+  try { input.setSelectionRange(input.value.length, input.value.length); } catch {}
+}
+
+function bindNumberInputs(root) {
+  root.querySelectorAll('[data-number-mode]').forEach(input => {
+    input.addEventListener('beforeinput', event => {
+      if (input.dataset.numberMode !== 'decimal' || event.data !== '.') return;
+      event.preventDefault();
+      const value = input.value;
+      const start = input.selectionStart ?? value.length;
+      const end = input.selectionEnd ?? start;
+      input.value = `${value.slice(0, start)},${value.slice(end)}`;
+      formatLiveNumberInput(input);
+    });
+    input.addEventListener('input', event => formatLiveNumberInput(input, event));
+  });
+}
+
+function validateBackupPayload(payload) {
+  if (!payload || payload.app !== 'ANGGARAN' || payload.schemaVersion !== BACKUP_SCHEMA_VERSION || !payload.data) {
+    throw new Error('File ini bukan backup ANGGARAN yang didukung.');
+  }
+
+  const { projects, items, realizations } = payload.data;
+  if (![projects, items, realizations].every(Array.isArray)) {
+    throw new Error('Struktur backup tidak lengkap.');
+  }
+
+  const projectIds = new Set();
+  for (const project of projects) {
+    if (!project?.id || typeof project.name !== 'string') throw new Error('Data proyek di backup rusak.');
+    projectIds.add(project.id);
+  }
+
+  const itemIds = new Set();
+  for (const item of items) {
+    if (!item?.id || !projectIds.has(item.projectId) || !Number.isFinite(Number(item.plannedQty)) || !Number.isFinite(Number(item.plannedUnitPrice))) {
+      throw new Error('Data item anggaran di backup rusak.');
+    }
+    itemIds.add(item.id);
+  }
+
+  for (const realization of realizations) {
+    if (!realization?.id || !itemIds.has(realization.itemId) || !Number.isFinite(Number(realization.qty)) || !Number.isFinite(Number(realization.actualUnitPrice))) {
+      throw new Error('Data realisasi di backup rusak.');
+    }
+  }
+
+  return { projects, items, realizations };
+}
+
+async function createBackupFile() {
+  try {
+    const data = await exportDataSnapshot();
+    const payload = {
+      app: 'ANGGARAN',
+      version: '0.2',
+      schemaVersion: BACKUP_SCHEMA_VERSION,
+      exportedAt: new Date().toISOString(),
+      data
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const local = new Date();
+    const stamp = `${local.getFullYear()}-${String(local.getMonth()+1).padStart(2,'0')}-${String(local.getDate()).padStart(2,'0')}_${String(local.getHours()).padStart(2,'0')}-${String(local.getMinutes()).padStart(2,'0')}`;
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `ANGGARAN-backup-${stamp}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast(`Backup dibuat: ${data.projects.length} proyek.`);
+  } catch (error) {
+    console.error(error);
+    toast('Backup gagal dibuat.');
+  }
+}
+
+function chooseBackupFile() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json,application/json';
+  input.addEventListener('change', async () => {
+    const file = input.files?.[0];
+    if (!file) return;
+    try {
+      const payload = JSON.parse(await file.text());
+      const data = validateBackupPayload(payload);
+      openConfirm(
+        'Pulihkan backup?',
+        `Data saat ini akan diganti dengan ${data.projects.length} proyek, ${data.items.length} item, dan ${data.realizations.length} realisasi dari file backup.`,
+        'Pulihkan',
+        async () => {
+          try {
+            await restoreDataSnapshot(data);
+            state.currentProjectId = null;
+            await reloadData();
+            closeOverlay();
+            render();
+            toast('Backup berhasil dipulihkan.');
+          } catch (error) {
+            console.error(error);
+            closeOverlay();
+            toast('Restore gagal. Data lama tetap dipertahankan jika transaksi dibatalkan.');
+          }
+        }
+      );
+    } catch (error) {
+      console.error(error);
+      toast(error?.message || 'File backup tidak bisa dibaca.');
+    }
+  }, { once: true });
+  input.click();
 }
 
 function parseInputNumber(value) {
