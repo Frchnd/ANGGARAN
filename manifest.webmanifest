@@ -1,0 +1,16 @@
+{
+  "name": "ANGGARAN",
+  "short_name": "ANGGARAN",
+  "description": "RAB dan realisasi proyek konstruksi yang cepat, lokal, dan offline.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F4F1EA",
+  "theme_color": "#171A1D",
+  "lang": "id-ID",
+  "icons": [
+    {"src":"./icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"./icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ]
+}
