@@ -1,4 +1,4 @@
-# ANGGARAN v0.1.1
+# ANGGARAN v0.2
 
 PWA offline-first untuk menyusun RAB proyek konstruksi dan mencatat realisasi pembelian/pengeluaran.
 
@@ -34,3 +34,10 @@ Store IndexedDB:
 - `settings`
 
 Nilai turunan seperti subtotal, sisa qty, sisa nominal, harga rata-rata aktual, dan selisih harga dihitung saat render dan tidak disimpan sebagai sumber data kedua.
+
+
+## Backup & Restore
+Pengaturan menyediakan backup data ke file JSON dan restore penuh dari file backup. Backup memuat proyek, item anggaran, dan realisasi. Preferensi UI seperti mode Mobile/PC tidak ikut dipindahkan karena sifatnya per perangkat.
+
+## Input angka
+Semua kolom angka bisnis diformat langsung dengan format Indonesia saat mengetik. Contoh: `1000` → `1.000`, `10000` → `10.000`. Qty pecahan menggunakan koma, misalnya `1,5`.
