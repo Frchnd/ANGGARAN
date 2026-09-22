@@ -290,7 +290,7 @@ function renderSettings() {
     </section>
     <section class="setting-card">
       <h3>Backup data</h3>
-      <p class="caption">Simpan salinan proyek ke file JSON. Restore akan mengganti seluruh data proyek di perangkat ini, tapi tidak mengubah pilihan tampilan Mobile/PC.</p>
+      <p class="caption">Simpan salinan seluruh proyek ke satu file backup. Pemulihan akan mengganti data proyek di perangkat ini, tapi tidak mengubah pilihan tampilan Mobile/PC.</p>
       <div class="data-actions">
         <button class="primary-button" data-action="backup-data" type="button">Buat backup</button>
         <button class="secondary-button" data-action="restore-data" type="button">Pulihkan backup</button>
@@ -568,22 +568,30 @@ function validateBackupPayload(payload) {
 
   const projectIds = new Set();
   for (const project of projects) {
-    if (!project?.id || typeof project.name !== 'string') throw new Error('Data proyek di backup rusak.');
+    if (!project?.id || typeof project.name !== 'string' || projectIds.has(project.id)) {
+      throw new Error('Data proyek di backup rusak.');
+    }
     projectIds.add(project.id);
   }
 
   const itemIds = new Set();
   for (const item of items) {
-    if (!item?.id || !projectIds.has(item.projectId) || !Number.isFinite(Number(item.plannedQty)) || !Number.isFinite(Number(item.plannedUnitPrice))) {
+    const qty = Number(item?.plannedQty);
+    const price = Number(item?.plannedUnitPrice);
+    if (!item?.id || itemIds.has(item.id) || !projectIds.has(item.projectId) || !Number.isFinite(qty) || qty <= 0 || !Number.isFinite(price) || price < 0) {
       throw new Error('Data item anggaran di backup rusak.');
     }
     itemIds.add(item.id);
   }
 
+  const realizationIds = new Set();
   for (const realization of realizations) {
-    if (!realization?.id || !itemIds.has(realization.itemId) || !Number.isFinite(Number(realization.qty)) || !Number.isFinite(Number(realization.actualUnitPrice))) {
+    const qty = Number(realization?.qty);
+    const price = Number(realization?.actualUnitPrice);
+    if (!realization?.id || realizationIds.has(realization.id) || !itemIds.has(realization.itemId) || !Number.isFinite(qty) || qty <= 0 || !Number.isFinite(price) || price < 0) {
       throw new Error('Data realisasi di backup rusak.');
     }
+    realizationIds.add(realization.id);
   }
 
   return { projects, items, realizations };
