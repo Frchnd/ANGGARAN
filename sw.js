@@ -1,4 +1,4 @@
-const CACHE = 'anggaran-shell-v3';
+const CACHE = 'anggaran-shell-v4';
 const ASSETS = [
   './', './index.html', './styles.css', './app.js', './db.js', './calc.js',
   './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'
