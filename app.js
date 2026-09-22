@@ -289,7 +289,7 @@ function renderSettings() {
       <div class="info-row"><span>Server wajib</span><strong>Tidak</strong></div>
     </section>
     ${currentProject() ? `<section class="setting-card"><h3>Proyek aktif</h3><div class="info-row"><span>Nama</span><strong>${esc(currentProject().name)}</strong></div><div class="info-row"><span>Mulai</span><strong>${formatDate(currentProject().startDate)}</strong></div><button class="secondary-button" style="margin-top:12px" data-action="edit-project" type="button">Ubah proyek</button><button class="text-button danger" style="width:100%;margin-top:8px" data-action="delete-project" type="button">Hapus proyek ini</button></section>` : ''}
-    <p class="caption" style="text-align:center;margin-top:18px">ANGGARAN v0.1 · Offline-first · Tanpa akun</p>`;
+    <p class="caption" style="text-align:center;margin-top:18px">ANGGARAN v0.1.1 · Offline-first · Tanpa akun</p>`;
 }
 
 function bindViewEvents() {
@@ -489,6 +489,9 @@ function parseInputNumber(value) {
   if (!raw) return 0;
   if (raw.includes(',') && raw.includes('.')) return Number(raw.replace(/\./g,'').replace(',','.')) || 0;
   if (raw.includes(',')) return Number(raw.replace(',','.')) || 0;
+  // Indonesian users commonly type dots as thousand separators (75.000).
+  // Keep ordinary decimal-dot input working too (1.5).
+  if (/^\d{1,3}(?:\.\d{3})+$/.test(raw)) return Number(raw.replace(/\./g,'')) || 0;
   return Number(raw) || 0;
 }
 
