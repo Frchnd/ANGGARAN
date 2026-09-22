@@ -109,3 +109,31 @@ export async function deleteItemCascade(itemId) {
     tx.onabort = () => reject(tx.error);
   });
 }
+
+
+export async function exportDataSnapshot() {
+  const [projects, items, realizations] = await Promise.all([
+    getAll('projects'),
+    getAll('items'),
+    getAll('realizations')
+  ]);
+  return { projects, items, realizations };
+}
+
+export async function restoreDataSnapshot(snapshot) {
+  const db = await openDB();
+  const stores = ['projects', 'items', 'realizations'];
+  const tx = db.transaction(stores, 'readwrite');
+
+  for (const storeName of stores) {
+    const store = tx.objectStore(storeName);
+    store.clear();
+    for (const value of snapshot[storeName] || []) store.put(value);
+  }
+
+  return new Promise((resolve, reject) => {
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
+  });
+}
