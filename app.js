@@ -546,9 +546,6 @@ function openQuickRealization(initialItemId = null) {
       </section>
     </form>`);
 
-  bindNumberInputs(els.overlayRoot);
-  bindPickerButtons(els.overlayRoot);
-
   const chooser = els.overlayRoot.querySelector('[data-quick-chooser]');
   const entry = els.overlayRoot.querySelector('[data-quick-entry]');
   const search = document.getElementById('quickItemSearch');
@@ -638,9 +635,7 @@ function openQuickRealization(initialItemId = null) {
     toggleExtra.classList.toggle('open', !extra.hidden);
   });
   noteInput.addEventListener('input', refreshExtraSummary);
-
-  const originalDatePicker = els.overlayRoot.querySelector('[data-target="quickDate"]');
-  originalDatePicker?.addEventListener('click', () => setTimeout(refreshExtraSummary, 0));
+  dateInput.addEventListener('change', refreshExtraSummary);
 
   if (selectedId) {
     updateSelected();
@@ -835,6 +830,7 @@ function openDatePicker(input, trigger) {
     const iso = dateToISO(date);
     input.value = iso;
     trigger.querySelector('[data-picker-value]').textContent = formatDate(iso);
+    input.dispatchEvent(new Event('change', { bubbles: true }));
     close();
   };
 
