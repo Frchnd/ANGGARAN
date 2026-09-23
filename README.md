@@ -1,4 +1,4 @@
-# ANGGARAN v0.3
+# ANGGARAN v0.4
 
 PWA offline-first untuk menyusun RAB proyek konstruksi dan mencatat realisasi pembelian/pengeluaran.
 
@@ -49,3 +49,13 @@ Semua kolom angka bisnis diformat langsung dengan format Indonesia saat mengetik
 - Dashboard membedakan Sisa Anggaran dengan Estimasi Kebutuhan Tersisa.
 - Insight Bahan dan Upah ditampilkan terpisah.
 - Kartu item menampilkan sisa anggaran, sisa qty, estimasi kebutuhan tersisa, dan selisih harga rata-rata.
+
+
+## v0.4
+- Alur Belanja Cepat: pilih/cari item → qty → harga aktual → simpan.
+- Tombol tambah utama, dashboard, daftar item, dan halaman realisasi memakai alur cepat untuk transaksi baru.
+- Item yang terakhir dipakai diprioritaskan di daftar Belanja Cepat.
+- Setelah memilih item, aplikasi langsung memfokuskan Qty; Enter lanjut ke Harga dan Enter berikutnya menyimpan.
+- Tanggal otomatis hari ini. Tanggal lain dan catatan tetap tersedia lewat bagian tambahan.
+- Harga rencana ditampilkan sebagai referensi tetapi tidak otomatis disalin ke harga aktual.
+- Total transaksi dihitung live sebelum disimpan.
