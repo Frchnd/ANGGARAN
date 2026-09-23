@@ -313,7 +313,7 @@ function renderSettings() {
       </div>
     </section>
     ${currentProject() ? `<section class="setting-card"><h3>Proyek aktif</h3><div class="info-row"><span>Nama</span><strong>${esc(currentProject().name)}</strong></div><div class="info-row"><span>Mulai</span><strong>${formatDate(currentProject().startDate)}</strong></div><button class="secondary-button" style="margin-top:12px" data-action="edit-project" type="button">Ubah proyek</button><button class="text-button danger" style="width:100%;margin-top:8px" data-action="delete-project" type="button">Hapus proyek ini</button></section>` : ''}
-    <p class="caption" style="text-align:center;margin-top:18px">ANGGARAN v0.4 · Offline-first · Tanpa akun</p>`;
+    <p class="caption" style="text-align:center;margin-top:18px">ANGGARAN v0.5 · Offline-first · Tanpa akun</p>`;
 }
 
 function bindViewEvents() {
@@ -337,6 +337,80 @@ function navigate(view) {
   window.scrollTo({top:0, behavior:'instant'});
 }
 
+let lockedScrollY = 0;
+
+function syncVisualViewport() {
+  const viewport = window.visualViewport;
+  const height = viewport?.height || window.innerHeight;
+  const offsetTop = viewport?.offsetTop || 0;
+  document.documentElement.style.setProperty('--app-viewport-height', `${Math.round(height)}px`);
+  document.documentElement.style.setProperty('--app-viewport-top', `${Math.round(offsetTop)}px`);
+}
+
+function lockDocumentScroll() {
+  if (document.body.classList.contains('modal-open')) return;
+  lockedScrollY = window.scrollY || 0;
+  document.body.classList.add('modal-open');
+  document.body.style.top = `-${lockedScrollY}px`;
+  syncVisualViewport();
+}
+
+function unlockDocumentScroll() {
+  if (!document.body.classList.contains('modal-open')) return;
+  document.body.classList.remove('modal-open');
+  document.body.style.top = '';
+  window.scrollTo(0, lockedScrollY);
+}
+
+function overlayHistoryDepth() {
+  return Number(history.state?.anggaranOverlayDepth) || 0;
+}
+
+function pushOverlayHistory(depth) {
+  if (overlayHistoryDepth() >= depth) return;
+  history.pushState({ ...(history.state || {}), anggaranOverlayDepth: depth }, '');
+}
+
+function closeSubOverlay({ fromHistory = false } = {}) {
+  const sub = els.overlayRoot.querySelector('[data-sub-overlay]');
+  if (!sub) return;
+  if (!fromHistory && overlayHistoryDepth() >= 2) {
+    history.back();
+    return;
+  }
+  sub.remove();
+}
+
+function showFormError(form, message, target = null) {
+  form.querySelector('[data-form-error]')?.remove();
+  form.querySelectorAll('[aria-invalid="true"]').forEach(el => el.removeAttribute('aria-invalid'));
+  const panel = document.createElement('div');
+  panel.className = 'form-error';
+  panel.dataset.formError = '';
+  panel.setAttribute('role', 'alert');
+  panel.textContent = message;
+  form.prepend(panel);
+  if (target) {
+    target.setAttribute('aria-invalid', 'true');
+    requestAnimationFrame(() => {
+      target.focus?.({ preventScroll: false });
+      target.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+    });
+  }
+}
+
+function clearFormError(form) {
+  form.querySelector('[data-form-error]')?.remove();
+  form.querySelectorAll('[aria-invalid="true"]').forEach(el => el.removeAttribute('aria-invalid'));
+}
+
+function bindFormUX(root) {
+  root.querySelectorAll('form').forEach(form => {
+    form.addEventListener('input', () => clearFormError(form));
+    form.addEventListener('change', () => clearFormError(form));
+  });
+}
+
 async function handleAction(e) {
   const action = e.currentTarget.dataset.action;
   const id = e.currentTarget.dataset.id;
@@ -353,36 +427,58 @@ async function handleAction(e) {
 }
 
 function openSheet(title, content) {
-  els.overlayRoot.innerHTML = `<div class="overlay" data-overlay><section class="sheet" role="dialog" aria-modal="true"><div class="sheet-head"><div class="sheet-title">${esc(title)}</div><button class="sheet-close" type="button" data-close>${icons.close}</button></div><div class="sheet-body">${content}</div></section></div>`;
+  const hadMainOverlay = Boolean(els.overlayRoot.querySelector('[data-overlay]'));
+  els.overlayRoot.innerHTML = `<div class="overlay" data-overlay><section class="sheet" role="dialog" aria-modal="true"><div class="sheet-head"><div class="sheet-title">${esc(title)}</div><button class="sheet-close" type="button" data-close aria-label="Tutup">${icons.close}</button></div><div class="sheet-body">${content}</div></section></div>`;
+  if (!hadMainOverlay) pushOverlayHistory(1);
+  lockDocumentScroll();
   const overlay = els.overlayRoot.querySelector('[data-overlay]');
   overlay.addEventListener('click', e => { if (e.target === overlay) closeOverlay(); });
-  els.overlayRoot.querySelector('[data-close]').addEventListener('click', closeOverlay);
-  document.addEventListener('keydown', onEsc, { once: true });
+  els.overlayRoot.querySelector('[data-close]').addEventListener('click', () => closeOverlay());
   bindNumberInputs(els.overlayRoot);
   bindPickerButtons(els.overlayRoot);
-  requestAnimationFrame(() => els.overlayRoot.querySelector('input, textarea, button')?.focus({preventScroll:true}));
+  bindFormUX(els.overlayRoot);
+  requestAnimationFrame(() => els.overlayRoot.querySelector('input:not([type="hidden"]), textarea, button')?.focus({preventScroll:true}));
 }
 
 function openConfirm(title, message, confirmLabel, onConfirm) {
+  const hadMainOverlay = Boolean(els.overlayRoot.querySelector('[data-overlay]'));
   els.overlayRoot.innerHTML = `<div class="overlay" data-overlay><section class="confirm-panel" role="alertdialog" aria-modal="true"><h2>${esc(title)}</h2><p>${esc(message)}</p><div class="confirm-actions"><button class="secondary-button" type="button" data-cancel>Batal</button><button class="danger-button" type="button" data-confirm>${esc(confirmLabel)}</button></div></section></div>`;
-  els.overlayRoot.querySelector('[data-cancel]').addEventListener('click', closeOverlay);
+  if (!hadMainOverlay) pushOverlayHistory(1);
+  lockDocumentScroll();
+  els.overlayRoot.querySelector('[data-cancel]').addEventListener('click', () => closeOverlay());
   els.overlayRoot.querySelector('[data-confirm]').addEventListener('click', onConfirm);
-  document.addEventListener('keydown', onEsc, { once:true });
+  requestAnimationFrame(() => els.overlayRoot.querySelector('[data-cancel]')?.focus({preventScroll:true}));
 }
 
-function onEsc(e) { if (e.key === 'Escape') closeOverlay(); }
-function closeOverlay() { els.overlayRoot.innerHTML = ''; document.removeEventListener('keydown', onEsc); }
+function onEsc(e) {
+  if (e.key !== 'Escape') return;
+  if (els.overlayRoot.querySelector('[data-sub-overlay]')) closeSubOverlay();
+  else if (els.overlayRoot.querySelector('[data-overlay]')) closeOverlay();
+}
+
+function closeOverlay({ fromHistory = false } = {}) {
+  if (!els.overlayRoot.querySelector('[data-overlay]')) return;
+  if (!fromHistory && overlayHistoryDepth() >= 1) {
+    history.back();
+    return;
+  }
+  els.overlayRoot.innerHTML = '';
+  unlockDocumentScroll();
+}
 
 function openSubSheet(title, content) {
+  els.overlayRoot.querySelector('[data-sub-overlay]')?.remove();
   const overlay = document.createElement('div');
   overlay.className = 'overlay sub-overlay';
   overlay.dataset.subOverlay = '';
-  overlay.innerHTML = `<section class="sheet sub-sheet" role="dialog" aria-modal="true"><div class="sheet-head"><div class="sheet-title">${esc(title)}</div><button class="sheet-close" type="button" data-sub-close>${icons.close}</button></div><div class="sheet-body">${content}</div></section>`;
+  overlay.innerHTML = `<section class="sheet sub-sheet" role="dialog" aria-modal="true"><div class="sheet-head"><div class="sheet-title">${esc(title)}</div><button class="sheet-close" type="button" data-sub-close aria-label="Tutup">${icons.close}</button></div><div class="sheet-body">${content}</div></section>`;
   els.overlayRoot.appendChild(overlay);
-  const close = () => overlay.remove();
+  pushOverlayHistory(2);
+  const close = () => closeSubOverlay();
   overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
   overlay.querySelector('[data-sub-close]').addEventListener('click', close);
-  requestAnimationFrame(() => overlay.querySelector('input, button')?.focus({preventScroll:true}));
+  bindFormUX(overlay);
+  requestAnimationFrame(() => overlay.querySelector('input:not([type="hidden"]), button')?.focus({preventScroll:true}));
   return { overlay, close };
 }
 
@@ -399,7 +495,7 @@ function openProjectChooser() {
 
 function openProjectForm(project = null) {
   openSheet(project ? 'Ubah proyek' : 'Proyek baru', `
-    <form id="projectForm" class="form-grid">
+    <form id="projectForm" class="form-grid" novalidate>
       <div class="field"><label for="projectName">Nama proyek</label><input class="input" id="projectName" name="name" maxlength="80" required autocomplete="off" placeholder="Contoh: Renovasi Rumah" value="${project ? esc(project.name) : ''}"></div>
       <div class="field"><label>Tanggal mulai</label><input type="hidden" id="projectDate" name="startDate" value="${project?.startDate || isoToday()}"><button class="picker-button" type="button" data-date-picker data-target="projectDate"><span class="picker-icon">${icons.calendar}</span><span data-picker-value>${formatDate(project?.startDate || isoToday())}</span><span class="picker-chevron">${icons.chevron}</span></button></div>
       <div class="field"><label>Status</label><div class="segmented" id="projectStatus"><button type="button" data-status="active" class="${!project || project.status==='active'?'active':''}">Aktif</button><button type="button" data-status="done" class="${project?.status==='done'?'active':''}">Selesai</button></div></div>
@@ -414,7 +510,7 @@ function openProjectForm(project = null) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const name = String(fd.get('name')).trim();
-    if (!name) return toast('Nama proyek wajib diisi.');
+    if (!name) return showFormError(e.currentTarget, 'Nama proyek wajib diisi.', document.getElementById('projectName'));
     const now = new Date().toISOString();
     const value = { id: project?.id || uid('prj'), name, startDate: String(fd.get('startDate')), status, createdAt: project?.createdAt || now, updatedAt: now };
     await put('projects', value);
@@ -427,7 +523,7 @@ function openProjectForm(project = null) {
 function openItemForm(item = null) {
   if (!currentProject()) return openProjectForm();
   openSheet(item ? 'Ubah item anggaran' : 'Tambah item anggaran', `
-    <form id="itemForm" class="form-grid">
+    <form id="itemForm" class="form-grid" novalidate>
       <div class="field"><label>Jenis</label><div class="segmented" id="itemCategory"><button type="button" data-item-category="Bahan" class="${!item || item.category==='Bahan'?'active':''}">Bahan</button><button type="button" data-item-category="Upah" class="${item?.category==='Upah'?'active':''}">Upah</button></div></div>
       <div class="field"><label for="itemName">Nama item</label><input class="input" id="itemName" name="name" maxlength="100" required autocomplete="off" placeholder="Contoh: Batu bata" value="${item ? esc(item.name) : ''}"></div>
       <div class="field"><label>Satuan</label><input type="hidden" id="itemUnit" name="unit" value="${item ? esc(item.unit) : ''}"><button class="picker-button" type="button" data-unit-picker data-target="itemUnit"><span data-picker-value class="${item?.unit ? '' : 'picker-placeholder'}">${item?.unit ? esc(item.unit) : 'Pilih satuan'}</span><span class="picker-chevron">${icons.chevron}</span></button><div class="field-note">Pilih satuan umum atau buat satuan sendiri jika belum ada.</div></div>
@@ -450,7 +546,10 @@ function openItemForm(item = null) {
     const unit = String(fd.get('unit')).trim();
     const plannedQty = parseInputNumber(fd.get('plannedQty'));
     const plannedUnitPrice = parseInputNumber(fd.get('plannedUnitPrice'));
-    if (!name || !unit || plannedQty <= 0 || plannedUnitPrice < 0) return toast('Cek lagi nama, satuan, qty, dan harga.');
+    if (!name) return showFormError(e.currentTarget, 'Nama item wajib diisi.', document.getElementById('itemName'));
+    if (!unit) return showFormError(e.currentTarget, 'Pilih satuan item dulu.', e.currentTarget.querySelector('[data-unit-picker]'));
+    if (plannedQty <= 0) return showFormError(e.currentTarget, 'Qty rencana harus lebih dari 0.', document.getElementById('plannedQty'));
+    if (plannedUnitPrice < 0) return showFormError(e.currentTarget, 'Harga tidak boleh minus.', document.getElementById('plannedPrice'));
     const now = new Date().toISOString();
     await put('items', { id:item?.id||uid('itm'), projectId:currentProject().id, name, category, unit, plannedQty, plannedUnitPrice, createdAt:item?.createdAt||now, updatedAt:now });
     await reloadData(); closeOverlay(); render(); toast(item ? 'Item diperbarui.' : 'Item ditambahkan.');
@@ -488,7 +587,7 @@ function openQuickRealization(initialItemId = null) {
   const selected = () => itemById(selectedId);
 
   openSheet('Catat belanja cepat', `
-    <form id="quickRealizationForm" class="quick-form">
+    <form id="quickRealizationForm" class="quick-form" novalidate>
       <section class="quick-step" data-quick-chooser ${selectedId ? 'hidden' : ''}>
         <div class="quick-step-head">
           <div><span class="quick-step-number">1</span><strong>Pilih item</strong></div>
@@ -651,7 +750,8 @@ function openQuickRealization(initialItemId = null) {
     const fd = new FormData(e.currentTarget);
     const qty = parseInputNumber(fd.get('qty'));
     const actualUnitPrice = parseInputNumber(fd.get('actualUnitPrice'));
-    if (qty <= 0 || actualUnitPrice < 0) return toast('Qty harus lebih dari 0 dan harga tidak boleh minus.');
+    if (qty <= 0) return showFormError(e.currentTarget, 'Qty harus lebih dari 0.', qtyInput);
+    if (actualUnitPrice < 0) return showFormError(e.currentTarget, 'Harga tidak boleh minus.', priceInput);
 
     const now = new Date().toISOString();
     await put('realizations', {
@@ -678,7 +778,7 @@ function openRealizationForm(initialItemId = null, realization = null) {
   let selectedId = realization?.itemId || initialItemId || (items.length === 1 ? items[0].id : null);
   const optionsHtml = items.map(item => `<button class="option-row ${item.id===selectedId?'active':''}" data-pick-item="${item.id}" type="button"><div><strong>${esc(item.name)}</strong><span>${esc(item.category)} · ${number(item.plannedQty)} ${esc(item.unit)}</span></div><span class="option-check"></span></button>`).join('');
   openSheet(realization ? 'Ubah realisasi' : 'Catat realisasi', `
-    <form id="realizationForm" class="form-grid">
+    <form id="realizationForm" class="form-grid" novalidate>
       <div class="field"><label>Item anggaran</label><div class="search-field" style="margin-bottom:8px">${icons.search}<input id="itemPickerSearch" type="search" autocomplete="off" placeholder="Cari item"></div><div class="option-list" id="itemPickerList">${optionsHtml}</div></div>
       <div class="field"><label>Tanggal</label><input type="hidden" id="realizationDate" name="date" value="${realization?.date || isoToday()}"><button class="picker-button" type="button" data-date-picker data-target="realizationDate"><span class="picker-icon">${icons.calendar}</span><span data-picker-value>${formatDate(realization?.date || isoToday())}</span><span class="picker-chevron">${icons.chevron}</span></button></div>
       <div class="inline-fields"><div class="field"><label for="realizationQty">Qty dibeli</label><input class="input" id="realizationQty" name="qty" inputmode="decimal" data-number-mode="decimal" required placeholder="0" value="${formatNumberInputValue(realization?.qty, 'decimal')}"></div><div class="field"><label for="actualPrice">Harga aktual / satuan</label><div class="input-prefix"><span>Rp</span><input class="input" id="actualPrice" name="actualUnitPrice" inputmode="numeric" data-number-mode="integer" required placeholder="0" value="${formatNumberInputValue(realization?.actualUnitPrice, 'integer')}"></div></div></div>
@@ -701,11 +801,12 @@ function openRealizationForm(initialItemId = null, realization = null) {
   });
   document.getElementById('realizationForm').addEventListener('submit', async e => {
     e.preventDefault();
-    if (!selectedId) return toast('Pilih item anggaran dulu.');
+    if (!selectedId) return showFormError(e.currentTarget, 'Pilih item anggaran dulu.', document.getElementById('itemPickerSearch'));
     const fd = new FormData(e.currentTarget);
     const qty = parseInputNumber(fd.get('qty'));
     const actualUnitPrice = parseInputNumber(fd.get('actualUnitPrice'));
-    if (qty <= 0 || actualUnitPrice < 0) return toast('Qty harus lebih dari 0 dan harga tidak boleh minus.');
+    if (qty <= 0) return showFormError(e.currentTarget, 'Qty harus lebih dari 0.', document.getElementById('realizationQty'));
+    if (actualUnitPrice < 0) return showFormError(e.currentTarget, 'Harga tidak boleh minus.', document.getElementById('actualPrice'));
     const now = new Date().toISOString();
     await put('realizations', { id:realization?.id||uid('rlz'), itemId:selectedId, date:String(fd.get('date')), qty, actualUnitPrice, note:String(fd.get('note')).trim(), createdAt:realization?.createdAt||now, updatedAt:now });
     await reloadData(); closeOverlay(); render(); toast(realization ? 'Realisasi diperbarui.' : 'Realisasi tersimpan.');
@@ -969,7 +1070,7 @@ async function createBackupFile() {
     const data = await exportDataSnapshot();
     const payload = {
       app: 'ANGGARAN',
-      version: '0.4',
+      version: '0.5',
       schemaVersion: BACKUP_SCHEMA_VERSION,
       exportedAt: new Date().toISOString(),
       data
@@ -1052,6 +1153,20 @@ function bindGlobalEvents() {
     const nav = e.target.closest('[data-nav]');
     if (nav && !els.view.contains(nav)) navigate(nav.dataset.nav);
   });
+  document.addEventListener('keydown', onEsc);
+  window.addEventListener('popstate', event => {
+    const depth = Number(event.state?.anggaranOverlayDepth) || 0;
+    if (depth < 2) closeSubOverlay({ fromHistory: true });
+    if (depth < 1) closeOverlay({ fromHistory: true });
+  });
+  document.addEventListener('focusin', event => {
+    const target = event.target;
+    if (!els.overlayRoot.contains(target) || !target.matches?.('input:not([type="hidden"]), textarea')) return;
+    window.setTimeout(() => target.scrollIntoView({ block: 'center', behavior: 'smooth' }), 120);
+  });
+  window.visualViewport?.addEventListener('resize', syncVisualViewport);
+  window.visualViewport?.addEventListener('scroll', syncVisualViewport);
+  window.addEventListener('resize', syncVisualViewport);
   els.projectSwitcher.addEventListener('click', openProjectChooser);
   els.quickAddButton.addEventListener('click', () => openQuickRealization());
   const mqWide = window.matchMedia('(min-width: 900px)');
@@ -1062,6 +1177,8 @@ function bindGlobalEvents() {
 }
 
 async function init() {
+  history.replaceState({ ...(history.state || {}), anggaranOverlayDepth: 0 }, '');
+  syncVisualViewport();
   state.layoutMode = await getSetting('layoutMode', 'auto');
   state.currentProjectId = await getSetting('currentProjectId', null);
   await reloadData();
