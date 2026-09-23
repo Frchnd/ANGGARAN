@@ -439,7 +439,6 @@ function openConfirm(title, message, confirmLabel, onConfirm) {
   lockDocumentScroll();
   els.overlayRoot.querySelector('[data-cancel]').addEventListener('click', () => closeOverlay());
   els.overlayRoot.querySelector('[data-confirm]').addEventListener('click', onConfirm);
-  requestAnimationFrame(() => els.overlayRoot.querySelector('[data-cancel]')?.focus({preventScroll:true}));
 }
 
 function onEsc(e) {
