@@ -1,4 +1,4 @@
-# ANGGARAN v0.4
+# ANGGARAN v0.5
 
 PWA offline-first untuk menyusun RAB proyek konstruksi dan mencatat realisasi pembelian/pengeluaran.
 
@@ -59,3 +59,13 @@ Semua kolom angka bisnis diformat langsung dengan format Indonesia saat mengetik
 - Tanggal otomatis hari ini. Tanggal lain dan catatan tetap tersedia lewat bagian tambahan.
 - Harga rencana ditampilkan sebagai referensi tetapi tidak otomatis disalin ke harga aktual.
 - Total transaksi dihitung live sebelum disimpan.
+
+
+## v0.5
+- Tombol Back Android/browser menutup picker terlebih dahulu, lalu sheet utama, sebelum meninggalkan aplikasi.
+- Overlay memakai Visual Viewport agar tinggi sheet mengikuti area layar yang tersisa saat keyboard terbuka.
+- Background dikunci saat sheet terbuka agar halaman di belakang tidak ikut bergeser.
+- Fokus input di dalam sheet digeser ke area terlihat ketika keyboard muncul.
+- Validasi form memakai pesan bertema ANGGARAN, bukan popup validasi browser.
+- Harga kosong tidak lagi dianggap Rp0; Rp0 tetap valid bila pengguna memang mengetik 0.
+- Pengamanan tambahan untuk layar sangat sempit, teks panjang, dan overflow horizontal.
