@@ -1,4 +1,4 @@
-# ANGGARAN v0.6
+# ANGGARAN v0.6.1
 
 PWA offline-first untuk menyusun RAB proyek konstruksi dan mencatat realisasi pembelian/pengeluaran.
 
@@ -79,3 +79,11 @@ Semua kolom angka bisnis diformat langsung dengan format Indonesia saat mengetik
 - Micro-interaction hanya aktif bila perangkat mendukung hover/pointer yang sesuai dan tetap menghormati prefers-reduced-motion.
 - Tampilan desktop menyesuaikan kepadatan kartu di lebar menengah agar tidak memaksa lima kartu terlalu sempit.
 - Tidak ada font, CDN, gambar eksternal, framework UI, atau dependency baru.
+
+
+## v0.6.1
+- Tambah Item di dashboard memakai kartu berwarna hijau lembut, bukan putih.
+- Tidak ada input yang otomatis difokuskan saat sheet, picker, atau Belanja Cepat dibuka. Keyboard baru muncul setelah pengguna menyentuh input.
+- Kartu Item Dipilih di Belanja Cepat sekarang menjadi tombol penuh yang timbul, berwarna berbeda, dan bisa ditekan untuk membuka daftar item.
+- Ikon navigasi memakai kotak optik tetap dan ikon Pengaturan digambar ulang tanpa transform yang menggeser pusat.
+- Kartu informasi Penyimpanan di Pengaturan dihapus; fitur Backup Data tetap tersedia.
