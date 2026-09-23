@@ -23,7 +23,7 @@ const icons = {
   dashboard: '<svg viewBox="0 0 24 24"><path d="M4 13h6V4H4v9Zm0 7h6v-4H4v4Zm10 0h6v-9h-6v9Zm0-16v4h6V4h-6Z"/></svg>',
   budget: '<svg viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h5M8 16h3"/></svg>',
   activity: '<svg viewBox="0 0 24 24"><path d="M4 17 9 12l4 3 7-8M18 7h2v2"/></svg>',
-  settings: '<svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19 13.5v-3l-2-.7a7 7 0 0 0-.7-1.7l.9-1.9-2.1-2.1-1.9.9a7 7 0 0 0-1.7-.7L10.5 2h-3l-.7 2a7 7 0 0 0-1.7.7l-1.9-.9-2.1 2.1.9 1.9a7 7 0 0 0-.7 1.7l-2 .7v3l2 .7a7 7 0 0 0 .7 1.7l-.9 1.9 2.1 2.1 1.9-.9a7 7 0 0 0 1.7.7l.7 2h3l.7-2a7 7 0 0 0 1.7-.7l1.9.9 2.1-2.1-.9-1.9a7 7 0 0 0 .7-1.7l2-.7Z" transform="translate(1.5 0) scale(.88)"/></svg>',
+  settings: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21h-4v-.1a1.7 1.7 0 0 0-1.4-1.67 1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 3.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H2v-4h.1A1.7 1.7 0 0 0 3.77 8.2a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 8 3.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V2h4v.1A1.7 1.7 0 0 0 14.8 3.77a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 20.4 8c.14.36.36.7.64.98.3.27.68.42 1.06.42h.1v4h-.1A1.7 1.7 0 0 0 20.43 14.8 1.7 1.7 0 0 0 19.4 15Z"/></svg>',
   plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
   search: '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>',
   more: '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>',
@@ -102,7 +102,7 @@ function resolveLayout() {
 function renderNav() {
   const html = navItems.map(([id, label, icon]) => `
     <button type="button" class="nav-button ${state.view === id ? 'active' : ''}" data-nav="${id}">
-      ${icon}<span>${label}</span>
+      <span class="nav-icon">${icon}</span><span>${label}</span>
     </button>`).join('');
   els.bottomNav.innerHTML = html;
   els.desktopNav.innerHTML = html;
@@ -172,7 +172,7 @@ function renderDashboard() {
     </div>
     <div class="action-row">
       <button class="action-card" data-action="quick-realization" type="button">${icons.cart}<span>Catat belanja cepat</span></button>
-      <button class="action-card secondary" data-action="new-item" type="button">${icons.plus}<span>Tambah item</span></button>
+      <button class="action-card secondary item-add" data-action="new-item" type="button">${icons.plus}<span>Tambah item</span></button>
     </div>
     <div class="dashboard-columns">
       <section class="section">
@@ -299,12 +299,6 @@ function renderSettings() {
       </div>
     </section>
     <section class="setting-card">
-      <h3>Penyimpanan</h3>
-      <div class="info-row"><span>Lokasi data</span><strong>Perangkat ini</strong></div>
-      <div class="info-row"><span>Database</span><strong>IndexedDB</strong></div>
-      <div class="info-row"><span>Server wajib</span><strong>Tidak</strong></div>
-    </section>
-    <section class="setting-card">
       <h3>Backup data</h3>
       <p class="caption">Simpan salinan seluruh proyek ke satu file backup. Pemulihan akan mengganti data proyek di perangkat ini, tapi tidak mengubah pilihan tampilan Mobile/PC.</p>
       <div class="data-actions">
@@ -313,7 +307,7 @@ function renderSettings() {
       </div>
     </section>
     ${currentProject() ? `<section class="setting-card"><h3>Proyek aktif</h3><div class="info-row"><span>Nama</span><strong>${esc(currentProject().name)}</strong></div><div class="info-row"><span>Mulai</span><strong>${formatDate(currentProject().startDate)}</strong></div><button class="secondary-button" style="margin-top:12px" data-action="edit-project" type="button">Ubah proyek</button><button class="text-button danger" style="width:100%;margin-top:8px" data-action="delete-project" type="button">Hapus proyek ini</button></section>` : ''}
-    <p class="caption" style="text-align:center;margin-top:18px">ANGGARAN v0.6 · Offline-first · Tanpa akun</p>`;
+    <p class="caption" style="text-align:center;margin-top:18px">ANGGARAN v0.6.1 · Offline-first · Tanpa akun</p>`;
 }
 
 function bindViewEvents() {
@@ -393,7 +387,6 @@ function showFormError(form, message, target = null) {
   if (target) {
     target.setAttribute('aria-invalid', 'true');
     requestAnimationFrame(() => {
-      target.focus?.({ preventScroll: false });
       target.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
     });
   }
@@ -437,7 +430,6 @@ function openSheet(title, content) {
   bindNumberInputs(els.overlayRoot);
   bindPickerButtons(els.overlayRoot);
   bindFormUX(els.overlayRoot);
-  requestAnimationFrame(() => els.overlayRoot.querySelector('input:not([type="hidden"]), textarea, button')?.focus({preventScroll:true}));
 }
 
 function openConfirm(title, message, confirmLabel, onConfirm) {
@@ -478,7 +470,6 @@ function openSubSheet(title, content) {
   overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
   overlay.querySelector('[data-sub-close]').addEventListener('click', close);
   bindFormUX(overlay);
-  requestAnimationFrame(() => overlay.querySelector('input:not([type="hidden"]), button')?.focus({preventScroll:true}));
   return { overlay, close };
 }
 
@@ -609,10 +600,10 @@ function openQuickRealization(initialItemId = null) {
       </section>
 
       <section class="quick-step" data-quick-entry ${selectedId ? '' : 'hidden'}>
-        <div class="quick-selected">
-          <div class="quick-selected-main"><span class="caption">ITEM DIPILIH</span><strong data-quick-selected-name></strong><small data-quick-selected-meta></small></div>
-          <button class="text-button" type="button" data-change-item>Ganti</button>
-        </div>
+        <button class="quick-selected" type="button" data-change-item aria-label="Ganti item yang dipilih">
+          <span class="quick-selected-main"><span class="caption">ITEM DIPILIH</span><strong data-quick-selected-name></strong><small data-quick-selected-meta></small></span>
+          <span class="quick-selected-action"><span>Ganti</span>${icons.chevron}</span>
+        </button>
 
         <div class="quick-entry-grid">
           <div class="field">
@@ -690,8 +681,7 @@ function openQuickRealization(initialItemId = null) {
     els.overlayRoot.querySelector('[data-quick-empty]').hidden = true;
     updateSelected();
     requestAnimationFrame(() => {
-      qtyInput.focus({preventScroll:false});
-      qtyInput.scrollIntoView({block:'center', behavior:'smooth'});
+      entry.scrollIntoView({block:'nearest', behavior:'smooth'});
     });
   };
 
@@ -713,7 +703,6 @@ function openQuickRealization(initialItemId = null) {
     selectedId = null;
     entry.hidden = true;
     chooser.hidden = false;
-    requestAnimationFrame(() => search.focus({preventScroll:false}));
   });
 
   qtyInput.addEventListener('input', updatePreview);
@@ -738,12 +727,7 @@ function openQuickRealization(initialItemId = null) {
   noteInput.addEventListener('input', refreshExtraSummary);
   dateInput.addEventListener('change', refreshExtraSummary);
 
-  if (selectedId) {
-    updateSelected();
-    requestAnimationFrame(() => qtyInput.focus({preventScroll:false}));
-  } else {
-    requestAnimationFrame(() => search.focus({preventScroll:false}));
-  }
+  if (selectedId) updateSelected();
 
   document.getElementById('quickRealizationForm').addEventListener('submit', async e => {
     e.preventDefault();
@@ -1077,7 +1061,7 @@ async function createBackupFile() {
     const data = await exportDataSnapshot();
     const payload = {
       app: 'ANGGARAN',
-      version: '0.6',
+      version: '0.6.1',
       schemaVersion: BACKUP_SCHEMA_VERSION,
       exportedAt: new Date().toISOString(),
       data
