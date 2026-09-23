@@ -152,6 +152,34 @@ p { margin: 0; }
 .sheet-actions { position: sticky; bottom: calc(-18px - var(--safe-bottom)); margin: 20px -18px calc(-18px - var(--safe-bottom)); padding: 12px 18px calc(18px + var(--safe-bottom)); display: grid; gap: 8px; background: linear-gradient(to top, var(--bg) 82%, rgba(244,241,234,0)); }
 
 .form-grid { display: grid; gap: 15px; }
+.quick-form { min-width: 0; }
+.quick-step { min-width: 0; }
+.quick-step[hidden] { display: none !important; }
+.quick-step-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; min-width: 0; }
+.quick-step-head > div { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.quick-step-number { width: 28px; height: 28px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 10px; background: var(--ink); color: white; font-size: 12px; font-weight: 900; }
+.quick-search { margin-bottom: 10px; }
+.quick-item-list { display: grid; gap: 7px; max-height: min(46dvh, 390px); overflow-y: auto; overscroll-behavior: contain; min-width: 0; padding-right: 1px; }
+.quick-item { width: 100%; min-width: 0; min-height: 62px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 13px; border: 1px solid var(--line); border-radius: 15px; background: var(--surface); text-align: left; }
+.quick-item-main, .quick-item-price { min-width: 0; }
+.quick-item-main strong { display: block; overflow-wrap: anywhere; }
+.quick-item-main small, .quick-item-price small { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; }
+.quick-item-price { flex: 0 0 auto; max-width: 42%; text-align: right; font-weight: 850; overflow-wrap: anywhere; }
+.quick-selected { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-width: 0; padding: 14px; margin-bottom: 16px; border-radius: 16px; background: var(--surface-2); border: 1px solid var(--line); }
+.quick-selected-main { min-width: 0; }
+.quick-selected-main > strong { display: block; margin-top: 3px; font-size: 17px; overflow-wrap: anywhere; }
+.quick-selected-main > small { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
+.quick-entry-grid { display: grid; grid-template-columns: minmax(0,.8fr) minmax(0,1.2fr); gap: 10px; min-width: 0; }
+.quick-input { height: 58px; font-size: 20px; font-weight: 850; }
+.quick-extra-toggle { width: 100%; min-width: 0; min-height: 46px; margin-top: 14px; padding: 0 13px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid var(--line); border-radius: 14px; background: transparent; color: var(--muted); text-align: left; font-weight: 750; }
+.quick-extra-toggle .picker-chevron { transition: transform .18s ease; }
+.quick-extra-toggle.open .picker-chevron { transform: rotate(90deg); }
+.quick-extra { display: grid; gap: 13px; margin-top: 12px; padding: 14px; border-radius: 16px; background: var(--surface-2); border: 1px solid var(--line); }
+.quick-extra[hidden] { display: none !important; }
+.quick-preview { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 16px; padding: 15px 16px; border-radius: 16px; background: var(--ink); color: white; }
+.quick-preview span { color: rgba(255,255,255,.62); font-size: 11px; font-weight: 750; text-transform: uppercase; letter-spacing: .05em; }
+.quick-preview strong { min-width: 0; text-align: right; font-size: 20px; overflow-wrap: anywhere; }
+.quick-actions { margin-top: 16px; }
 .field { min-width: 0; }
 .field label { display: block; margin: 0 0 7px; font-size: 12px; color: var(--muted); font-weight: 800; }
 .input, .textarea { width: 100%; min-width: 0; border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 14px; outline: 0; }
@@ -292,6 +320,8 @@ p { margin: 0; }
   .stats-grid { gap: 8px; }
   .stat-card { padding: 13px; }
   .inline-fields { grid-template-columns: 1fr; }
+  .quick-entry-grid { grid-template-columns: 1fr; }
+  .quick-item-price { max-width: 38%; }
   .category-insight { grid-template-columns: 1fr; }
   .unit-list { grid-template-columns: 1fr; }
   .custom-unit-row { grid-template-columns: 1fr; }
