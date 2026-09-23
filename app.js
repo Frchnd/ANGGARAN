@@ -872,6 +872,7 @@ function openUnitPicker(input, trigger) {
     const clean = String(value || '').trim();
     if (!clean) return;
     input.value = clean;
+    input.dispatchEvent(new Event('change', { bubbles: true }));
     const label = trigger.querySelector('[data-picker-value]');
     label.textContent = clean;
     label.classList.remove('picker-placeholder');
