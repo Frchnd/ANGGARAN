@@ -153,7 +153,7 @@ p { margin: 0; }
   background: rgba(15,16,17,.46); padding: 0; overflow: hidden; animation: fade .14s ease-out;
 }
 .sheet {
-  width: 100%; max-width: 100%; max-height: min(calc(var(--app-viewport-height) * .92), 820px);
+  width: 100%; max-width: 100%; max-height: min(calc(var(--app-viewport-height) - 28px), 820px);
   overflow: hidden; border-radius: 26px 26px 0 0; background: var(--bg); box-shadow: var(--shadow); animation: rise .2s ease-out;
 }
 .sheet-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-width: 0; padding: 18px 18px 12px; }
@@ -162,7 +162,7 @@ p { margin: 0; }
 .sheet-body {
   min-width: 0; max-width: 100%; overflow-y: auto; overflow-x: clip; -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain; padding: 4px 18px calc(18px + var(--safe-bottom));
-  max-height: calc(min(calc(var(--app-viewport-height) * .92), 820px) - 70px);
+  max-height: min(calc(var(--app-viewport-height) - 98px), 750px);
 }
 .sheet-actions { position: sticky; bottom: calc(-18px - var(--safe-bottom)); margin: 20px -18px calc(-18px - var(--safe-bottom)); padding: 12px 18px calc(18px + var(--safe-bottom)); display: grid; gap: 8px; background: linear-gradient(to top, var(--bg) 82%, rgba(244,241,234,0)); }
 
@@ -329,8 +329,8 @@ p { margin: 0; }
 .app-shell[data-layout="desktop"] .toolbar .search-field { flex: 1; max-width: 460px; }
 .app-shell[data-layout="desktop"] .toolbar .segmented { flex: 0 0 auto; }
 .app-shell[data-layout="desktop"] .card-list.budget-list { grid-template-columns: repeat(2,minmax(0,1fr)); }
-.app-shell[data-layout="desktop"] .sheet { width: min(620px, calc(100vw - 48px)); max-height: min(calc(var(--app-viewport-height) * .84), 820px); border-radius: 26px; margin: auto; }
-.app-shell[data-layout="desktop"] .sheet-body { max-height: calc(min(calc(var(--app-viewport-height) * .84), 820px) - 70px); }
+.app-shell[data-layout="desktop"] .sheet { width: min(620px, calc(100vw - 48px)); max-height: min(calc(var(--app-viewport-height) - 48px), 820px); border-radius: 26px; margin: auto; }
+.app-shell[data-layout="desktop"] .sheet-body { max-height: min(calc(var(--app-viewport-height) - 118px), 750px); }
 .app-shell[data-layout="desktop"] .overlay { align-items: center; padding: 24px; }
 .app-shell[data-layout="desktop"] .toast-root { left: 270px; bottom: 20px; }
 .app-shell[data-layout="desktop"] .desktop-only { display: initial; }
