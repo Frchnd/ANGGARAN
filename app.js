@@ -545,10 +545,12 @@ function openItemForm(item = null) {
     const name = String(fd.get('name')).trim();
     const unit = String(fd.get('unit')).trim();
     const plannedQty = parseInputNumber(fd.get('plannedQty'));
-    const plannedUnitPrice = parseInputNumber(fd.get('plannedUnitPrice'));
+    const plannedPriceRaw = String(fd.get('plannedUnitPrice') ?? '').trim();
+    const plannedUnitPrice = parseInputNumber(plannedPriceRaw);
     if (!name) return showFormError(e.currentTarget, 'Nama item wajib diisi.', document.getElementById('itemName'));
     if (!unit) return showFormError(e.currentTarget, 'Pilih satuan item dulu.', e.currentTarget.querySelector('[data-unit-picker]'));
     if (plannedQty <= 0) return showFormError(e.currentTarget, 'Qty rencana harus lebih dari 0.', document.getElementById('plannedQty'));
+    if (!plannedPriceRaw) return showFormError(e.currentTarget, 'Harga rencana wajib diisi. Ketik 0 kalau memang gratis.', document.getElementById('plannedPrice'));
     if (plannedUnitPrice < 0) return showFormError(e.currentTarget, 'Harga tidak boleh minus.', document.getElementById('plannedPrice'));
     const now = new Date().toISOString();
     await put('items', { id:item?.id||uid('itm'), projectId:currentProject().id, name, category, unit, plannedQty, plannedUnitPrice, createdAt:item?.createdAt||now, updatedAt:now });
@@ -749,8 +751,10 @@ function openQuickRealization(initialItemId = null) {
     if (!item) return toast('Pilih item anggaran dulu.');
     const fd = new FormData(e.currentTarget);
     const qty = parseInputNumber(fd.get('qty'));
-    const actualUnitPrice = parseInputNumber(fd.get('actualUnitPrice'));
+    const actualPriceRaw = String(fd.get('actualUnitPrice') ?? '').trim();
+    const actualUnitPrice = parseInputNumber(actualPriceRaw);
     if (qty <= 0) return showFormError(e.currentTarget, 'Qty harus lebih dari 0.', qtyInput);
+    if (!actualPriceRaw) return showFormError(e.currentTarget, 'Harga aktual wajib diisi. Ketik 0 kalau memang gratis.', priceInput);
     if (actualUnitPrice < 0) return showFormError(e.currentTarget, 'Harga tidak boleh minus.', priceInput);
 
     const now = new Date().toISOString();
@@ -804,8 +808,10 @@ function openRealizationForm(initialItemId = null, realization = null) {
     if (!selectedId) return showFormError(e.currentTarget, 'Pilih item anggaran dulu.', document.getElementById('itemPickerSearch'));
     const fd = new FormData(e.currentTarget);
     const qty = parseInputNumber(fd.get('qty'));
-    const actualUnitPrice = parseInputNumber(fd.get('actualUnitPrice'));
+    const actualPriceRaw = String(fd.get('actualUnitPrice') ?? '').trim();
+    const actualUnitPrice = parseInputNumber(actualPriceRaw);
     if (qty <= 0) return showFormError(e.currentTarget, 'Qty harus lebih dari 0.', document.getElementById('realizationQty'));
+    if (!actualPriceRaw) return showFormError(e.currentTarget, 'Harga aktual wajib diisi. Ketik 0 kalau memang gratis.', document.getElementById('actualPrice'));
     if (actualUnitPrice < 0) return showFormError(e.currentTarget, 'Harga tidak boleh minus.', document.getElementById('actualPrice'));
     const now = new Date().toISOString();
     await put('realizations', { id:realization?.id||uid('rlz'), itemId:selectedId, date:String(fd.get('date')), qty, actualUnitPrice, note:String(fd.get('note')).trim(), createdAt:realization?.createdAt||now, updatedAt:now });
