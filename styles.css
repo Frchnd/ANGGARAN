@@ -683,3 +683,78 @@ button:active, .action-card:active, .item-card:active .small-action {
     transition: none !important;
   }
 }
+
+
+/* v0.6.1 requested UI polish */
+.action-card.item-add {
+  background: #DFE9DC;
+  color: #244B39;
+  border-color: #BDD0C0;
+  box-shadow: 0 7px 18px rgba(52,116,88,.11);
+}
+.action-card.item-add::after { background: rgba(52,116,88,.08); }
+.action-card.item-add svg { color: #2F684E; }
+
+.quick-selected {
+  width: 100%;
+  min-height: 78px;
+  border: 1px solid #D7B45A;
+  background: linear-gradient(145deg, #FFF2C8 0%, #F6E5AD 100%);
+  color: var(--ink);
+  text-align: left;
+  box-shadow: 0 8px 20px rgba(137,102,27,.14), inset 0 1px 0 rgba(255,255,255,.7);
+  cursor: pointer;
+  transition: transform .13s ease, box-shadow .14s ease, border-color .14s ease;
+}
+.quick-selected-main { display: block; flex: 1 1 auto; min-width: 0; }
+.quick-selected-main .caption { color: #765D20; font-weight: 900; letter-spacing: .07em; }
+.quick-selected-action {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #6D571E;
+  font-size: 11px;
+  font-weight: 900;
+}
+.quick-selected-action svg { width: 17px; height: 17px; }
+.quick-selected:active { transform: translateY(1px) scale(.992); box-shadow: 0 4px 12px rgba(137,102,27,.12), inset 0 1px 0 rgba(255,255,255,.7); }
+
+/* Keep every icon inside a fixed optical box so nav/button glyphs stay centered. */
+svg { display: block; flex: 0 0 auto; }
+.nav-icon {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 26px;
+  line-height: 0;
+}
+.nav-icon svg { width: 21px; height: 21px; margin: 0; }
+.icon-button, .menu-button, .sheet-close, .empty-icon, .picker-icon, .picker-chevron, .calendar-nav {
+  place-items: center;
+  line-height: 0;
+}
+.icon-button svg { width: 22px; height: 22px; margin: 0; }
+.menu-button svg { width: 19px; height: 19px; margin: 0; }
+.sheet-close svg { width: 20px; height: 20px; margin: 0; }
+.empty-icon svg { width: 24px; height: 24px; margin: 0; }
+.picker-icon svg, .picker-chevron svg { margin: 0; }
+
+.app-shell[data-layout="desktop"] .desktop-nav .nav-icon {
+  width: 24px;
+  height: 24px;
+  flex-basis: 24px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .action-card.item-add:hover {
+    background: #D7E5D3;
+    box-shadow: 0 10px 24px rgba(52,116,88,.15);
+  }
+  .quick-selected:hover {
+    transform: translateY(-1px);
+    border-color: #C89E35;
+    box-shadow: 0 11px 24px rgba(137,102,27,.17), inset 0 1px 0 rgba(255,255,255,.75);
+  }
+}
