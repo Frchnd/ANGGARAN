@@ -171,7 +171,7 @@ function renderDashboard() {
       <div class="category-insight-card"><div><span>Upah</span><strong>${money(m.category.Upah.realized)}</strong></div><small>dari ${money(m.category.Upah.budget)}</small></div>
     </div>
     <div class="action-row">
-      <button class="action-card" data-action="new-realization" type="button">${icons.cart}<span>Catat realisasi</span></button>
+      <button class="action-card" data-action="quick-realization" type="button">${icons.cart}<span>Catat belanja cepat</span></button>
       <button class="action-card secondary" data-action="new-item" type="button">${icons.plus}<span>Tambah item</span></button>
     </div>
     <div class="dashboard-columns">
@@ -257,7 +257,7 @@ function renderItemCard(item) {
     </div>
     <div class="progress-track"><div class="progress-bar ${m.isOverBudget ? 'over' : ''}" style="width:${Math.min(m.progress*100,100)}%"></div></div>
     <div class="progress-labels"><span>${pct}% nominal terpakai</span><span>${number(m.realizedQty)} / ${number(m.plannedQty)} ${esc(item.unit)}</span></div>
-    <div class="card-actions"><button class="small-action" type="button" data-action="new-realization" data-item-id="${item.id}">Catat realisasi</button></div>
+    <div class="card-actions"><button class="small-action" type="button" data-action="quick-realization" data-item-id="${item.id}">Catat realisasi</button></div>
   </article>`;
 }
 
@@ -266,11 +266,11 @@ function renderActivity() {
   return `
     <div class="page-head">
       <div><p class="eyebrow">Pembelian & pengeluaran</p><h1>Realisasi</h1></div>
-      <button class="icon-button desktop-only" type="button" data-action="new-realization">${icons.plus}</button>
+      <button class="icon-button desktop-only" type="button" data-action="quick-realization">${icons.plus}</button>
     </div>
     ${tx.length ? `<div class="card-list">${tx.map(renderTransactionCard).join('')}</div>` : `
-      <div class="empty-state"><div class="empty-icon">${icons.cart}</div><h2>Belum ada realisasi</h2><p>Setiap pembelian bisa dicatat bertahap. Riwayatnya tetap disimpan dan tidak saling menimpa.</p>${projectItems().length ? '<button class="primary-button" data-action="new-realization" type="button">Catat realisasi</button>' : '<button class="primary-button" data-action="new-item" type="button">Buat item anggaran dulu</button>'}</div>`}
-    ${tx.length && state.effectiveLayout === 'mobile' ? '<div style="height:18px"></div><button class="primary-button accent" type="button" data-action="new-realization">+ Catat realisasi</button>' : ''}`;
+      <div class="empty-state"><div class="empty-icon">${icons.cart}</div><h2>Belum ada realisasi</h2><p>Setiap pembelian bisa dicatat bertahap. Riwayatnya tetap disimpan dan tidak saling menimpa.</p>${projectItems().length ? '<button class="primary-button" data-action="quick-realization" type="button">Catat realisasi</button>' : '<button class="primary-button" data-action="new-item" type="button">Buat item anggaran dulu</button>'}</div>`}
+    ${tx.length && state.effectiveLayout === 'mobile' ? '<div style="height:18px"></div><button class="primary-button accent" type="button" data-action="quick-realization">+ Catat realisasi</button>' : ''}`;
 }
 
 function renderTransactionCard(r) {
@@ -313,7 +313,7 @@ function renderSettings() {
       </div>
     </section>
     ${currentProject() ? `<section class="setting-card"><h3>Proyek aktif</h3><div class="info-row"><span>Nama</span><strong>${esc(currentProject().name)}</strong></div><div class="info-row"><span>Mulai</span><strong>${formatDate(currentProject().startDate)}</strong></div><button class="secondary-button" style="margin-top:12px" data-action="edit-project" type="button">Ubah proyek</button><button class="text-button danger" style="width:100%;margin-top:8px" data-action="delete-project" type="button">Hapus proyek ini</button></section>` : ''}
-    <p class="caption" style="text-align:center;margin-top:18px">ANGGARAN v0.3 · Offline-first · Tanpa akun</p>`;
+    <p class="caption" style="text-align:center;margin-top:18px">ANGGARAN v0.4 · Offline-first · Tanpa akun</p>`;
 }
 
 function bindViewEvents() {
@@ -346,6 +346,7 @@ async function handleAction(e) {
   if (action === 'new-item') openItemForm();
   if (action === 'item-menu') openItemMenu(id);
   if (action === 'new-realization') openRealizationForm(e.currentTarget.dataset.itemId || null);
+  if (action === 'quick-realization') openQuickRealization(e.currentTarget.dataset.itemId || null);
   if (action === 'realization-menu') openRealizationMenu(id);
   if (action === 'backup-data') createBackupFile();
   if (action === 'restore-data') chooseBackupFile();
@@ -460,11 +461,219 @@ function openItemMenu(id) {
   const item = itemById(id); if (!item) return;
   openSheet(item.name, `<div class="option-list"><button class="option-row" type="button" data-edit><div><strong>Ubah item</strong><span>Nama, jenis, satuan, qty, atau harga rencana</span></div></button><button class="option-row" type="button" data-realize><div><strong>Catat realisasi</strong><span>Tambahkan pembelian/pengeluaran untuk item ini</span></div></button><button class="option-row" type="button" data-delete><div><strong class="danger-text">Hapus item</strong><span>Riwayat realisasi item ini ikut terhapus</span></div></button></div>`);
   els.overlayRoot.querySelector('[data-edit]').addEventListener('click', () => openItemForm(item));
-  els.overlayRoot.querySelector('[data-realize]').addEventListener('click', () => openRealizationForm(item.id));
+  els.overlayRoot.querySelector('[data-realize]').addEventListener('click', () => openQuickRealization(item.id));
   els.overlayRoot.querySelector('[data-delete]').addEventListener('click', () => {
     openConfirm('Hapus item?', `${item.name} dan seluruh realisasinya akan dihapus dari proyek ini.`, 'Hapus', async () => {
       await deleteItemCascade(item.id); await reloadData(); closeOverlay(); render(); toast('Item dihapus.');
     });
+  });
+}
+
+function openQuickRealization(initialItemId = null) {
+  const items = projectItems();
+  if (!items.length) return openItemForm();
+
+  const lastByItem = new Map();
+  for (const r of projectRealizations()) {
+    const stamp = `${r.date || ''}${r.createdAt || ''}`;
+    if (!lastByItem.has(r.itemId) || stamp > lastByItem.get(r.itemId)) lastByItem.set(r.itemId, stamp);
+  }
+  const sortedItems = [...items].sort((a,b) => {
+    const aLast = lastByItem.get(a.id) || '';
+    const bLast = lastByItem.get(b.id) || '';
+    return bLast.localeCompare(aLast) || a.name.localeCompare(b.name, 'id');
+  });
+
+  let selectedId = initialItemId || (items.length === 1 ? items[0].id : null);
+  const selected = () => itemById(selectedId);
+
+  openSheet('Catat belanja cepat', `
+    <form id="quickRealizationForm" class="quick-form">
+      <section class="quick-step" data-quick-chooser ${selectedId ? 'hidden' : ''}>
+        <div class="quick-step-head">
+          <div><span class="quick-step-number">1</span><strong>Pilih item</strong></div>
+          <span class="caption">Cari nama barang / upah</span>
+        </div>
+        <div class="search-field quick-search">${icons.search}<input id="quickItemSearch" type="search" autocomplete="off" enterkeyhint="search" placeholder="Cari item anggaran"></div>
+        <div class="quick-item-list" id="quickItemList">
+          ${sortedItems.map(item => {
+            const m = itemMetrics(item, realizationsFor(item.id));
+            return `<button class="quick-item" type="button" data-quick-item="${item.id}">
+              <span class="quick-item-main"><strong>${esc(item.name)}</strong><small>${esc(item.category)} · sisa ${number(m.remainingQty)} ${esc(item.unit)}</small></span>
+              <span class="quick-item-price">${money(item.plannedUnitPrice)}<small>/${esc(item.unit)}</small></span>
+            </button>`;
+          }).join('')}
+        </div>
+        <div class="empty-picker" data-quick-empty hidden>Item nggak ditemukan.</div>
+      </section>
+
+      <section class="quick-step" data-quick-entry ${selectedId ? '' : 'hidden'}>
+        <div class="quick-selected">
+          <div class="quick-selected-main"><span class="caption">ITEM DIPILIH</span><strong data-quick-selected-name></strong><small data-quick-selected-meta></small></div>
+          <button class="text-button" type="button" data-change-item>Ganti</button>
+        </div>
+
+        <div class="quick-entry-grid">
+          <div class="field">
+            <label for="quickQty">Qty</label>
+            <input class="input quick-input" id="quickQty" name="qty" inputmode="decimal" data-number-mode="decimal" enterkeyhint="next" required placeholder="0">
+            <div class="field-note" data-quick-qty-note></div>
+          </div>
+          <div class="field">
+            <label for="quickPrice">Harga aktual / satuan</label>
+            <div class="input-prefix"><span>Rp</span><input class="input quick-input" id="quickPrice" name="actualUnitPrice" inputmode="numeric" data-number-mode="integer" enterkeyhint="done" required placeholder="0"></div>
+            <div class="field-note" data-quick-price-note></div>
+          </div>
+        </div>
+
+        <button class="quick-extra-toggle" type="button" data-toggle-extra>
+          <span data-extra-summary>Hari ini · tanpa catatan</span>
+          <span class="picker-chevron">${icons.chevron}</span>
+        </button>
+
+        <div class="quick-extra" data-quick-extra hidden>
+          <div class="field"><label>Tanggal</label><input type="hidden" id="quickDate" name="date" value="${isoToday()}"><button class="picker-button" type="button" data-date-picker data-target="quickDate"><span class="picker-icon">${icons.calendar}</span><span data-picker-value>${formatDate(isoToday())}</span><span class="picker-chevron">${icons.chevron}</span></button></div>
+          <div class="field"><label for="quickNote">Catatan <span style="font-weight:500">(opsional)</span></label><textarea class="textarea" id="quickNote" name="note" maxlength="180" placeholder="Contoh: Toko ABC"></textarea></div>
+        </div>
+
+        <div class="quick-preview" data-quick-preview>
+          <span>Total transaksi</span><strong>Rp0</strong>
+        </div>
+
+        <div class="sheet-actions quick-actions">
+          <button class="primary-button accent" type="submit">Simpan realisasi</button>
+        </div>
+      </section>
+    </form>`);
+
+  bindNumberInputs(els.overlayRoot);
+  bindPickerButtons(els.overlayRoot);
+
+  const chooser = els.overlayRoot.querySelector('[data-quick-chooser]');
+  const entry = els.overlayRoot.querySelector('[data-quick-entry]');
+  const search = document.getElementById('quickItemSearch');
+  const list = document.getElementById('quickItemList');
+  const qtyInput = document.getElementById('quickQty');
+  const priceInput = document.getElementById('quickPrice');
+  const preview = els.overlayRoot.querySelector('[data-quick-preview]');
+  const extra = els.overlayRoot.querySelector('[data-quick-extra]');
+  const toggleExtra = els.overlayRoot.querySelector('[data-toggle-extra]');
+  const extraSummary = els.overlayRoot.querySelector('[data-extra-summary]');
+  const dateInput = document.getElementById('quickDate');
+  const noteInput = document.getElementById('quickNote');
+
+  const updateSelected = () => {
+    const item = selected();
+    if (!item) return;
+    const m = itemMetrics(item, realizationsFor(item.id));
+    els.overlayRoot.querySelector('[data-quick-selected-name]').textContent = item.name;
+    els.overlayRoot.querySelector('[data-quick-selected-meta]').textContent = `${item.category} · sisa ${number(m.remainingQty)} ${item.unit}`;
+    els.overlayRoot.querySelector('[data-quick-qty-note]').textContent = `Rencana ${number(item.plannedQty)} ${item.unit} · sudah ${number(m.realizedQty)}`;
+    els.overlayRoot.querySelector('[data-quick-price-note]').textContent = `Harga rencana ${money(item.plannedUnitPrice)} / ${item.unit}`;
+  };
+
+  const updatePreview = () => {
+    const qty = parseInputNumber(qtyInput.value);
+    const price = parseInputNumber(priceInput.value);
+    preview.querySelector('strong').textContent = money(qty * price);
+  };
+
+  const refreshExtraSummary = () => {
+    const dateText = dateInput.value === isoToday() ? 'Hari ini' : formatDate(dateInput.value);
+    extraSummary.textContent = `${dateText} · ${noteInput.value.trim() ? 'ada catatan' : 'tanpa catatan'}`;
+  };
+
+  const chooseItem = id => {
+    selectedId = id;
+    chooser.hidden = true;
+    entry.hidden = false;
+    search.value = '';
+    for (const row of list.querySelectorAll('[data-quick-item]')) row.hidden = false;
+    els.overlayRoot.querySelector('[data-quick-empty]').hidden = true;
+    updateSelected();
+    requestAnimationFrame(() => {
+      qtyInput.focus({preventScroll:false});
+      qtyInput.scrollIntoView({block:'center', behavior:'smooth'});
+    });
+  };
+
+  list.querySelectorAll('[data-quick-item]').forEach(btn => btn.addEventListener('click', () => chooseItem(btn.dataset.quickItem)));
+
+  search.addEventListener('input', () => {
+    const q = search.value.trim().toLocaleLowerCase('id');
+    let visible = 0;
+    for (const row of list.querySelectorAll('[data-quick-item]')) {
+      const item = itemById(row.dataset.quickItem);
+      const show = item?.name.toLocaleLowerCase('id').includes(q) || item?.category.toLocaleLowerCase('id').includes(q);
+      row.hidden = !show;
+      if (show) visible += 1;
+    }
+    els.overlayRoot.querySelector('[data-quick-empty]').hidden = visible !== 0;
+  });
+
+  els.overlayRoot.querySelector('[data-change-item]').addEventListener('click', () => {
+    selectedId = null;
+    entry.hidden = true;
+    chooser.hidden = false;
+    requestAnimationFrame(() => search.focus({preventScroll:false}));
+  });
+
+  qtyInput.addEventListener('input', updatePreview);
+  priceInput.addEventListener('input', updatePreview);
+  qtyInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      priceInput.focus();
+    }
+  });
+  priceInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      document.getElementById('quickRealizationForm').requestSubmit();
+    }
+  });
+
+  toggleExtra.addEventListener('click', () => {
+    extra.hidden = !extra.hidden;
+    toggleExtra.classList.toggle('open', !extra.hidden);
+  });
+  noteInput.addEventListener('input', refreshExtraSummary);
+
+  const originalDatePicker = els.overlayRoot.querySelector('[data-target="quickDate"]');
+  originalDatePicker?.addEventListener('click', () => setTimeout(refreshExtraSummary, 0));
+
+  if (selectedId) {
+    updateSelected();
+    requestAnimationFrame(() => qtyInput.focus({preventScroll:false}));
+  } else {
+    requestAnimationFrame(() => search.focus({preventScroll:false}));
+  }
+
+  document.getElementById('quickRealizationForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const item = selected();
+    if (!item) return toast('Pilih item anggaran dulu.');
+    const fd = new FormData(e.currentTarget);
+    const qty = parseInputNumber(fd.get('qty'));
+    const actualUnitPrice = parseInputNumber(fd.get('actualUnitPrice'));
+    if (qty <= 0 || actualUnitPrice < 0) return toast('Qty harus lebih dari 0 dan harga tidak boleh minus.');
+
+    const now = new Date().toISOString();
+    await put('realizations', {
+      id: uid('rlz'),
+      itemId: item.id,
+      date: String(fd.get('date') || isoToday()),
+      qty,
+      actualUnitPrice,
+      note: String(fd.get('note') || '').trim(),
+      createdAt: now,
+      updatedAt: now
+    });
+
+    await reloadData();
+    closeOverlay();
+    render();
+    toast(`${item.name}: ${number(qty)} ${item.unit} tersimpan.`);
   });
 }
 
@@ -764,7 +973,7 @@ async function createBackupFile() {
     const data = await exportDataSnapshot();
     const payload = {
       app: 'ANGGARAN',
-      version: '0.3',
+      version: '0.4',
       schemaVersion: BACKUP_SCHEMA_VERSION,
       exportedAt: new Date().toISOString(),
       data
@@ -848,7 +1057,7 @@ function bindGlobalEvents() {
     if (nav && !els.view.contains(nav)) navigate(nav.dataset.nav);
   });
   els.projectSwitcher.addEventListener('click', openProjectChooser);
-  els.quickAddButton.addEventListener('click', () => openRealizationForm());
+  els.quickAddButton.addEventListener('click', () => openQuickRealization());
   const mqWide = window.matchMedia('(min-width: 900px)');
   const mqPointer = window.matchMedia('(pointer: fine)');
   const updateAuto = () => { if (state.layoutMode === 'auto') render(); };
