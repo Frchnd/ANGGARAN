@@ -151,7 +151,7 @@ function renderDashboard() {
     <div class="page-head">
       <div><p class="eyebrow">Kondisi proyek</p><h1>Ringkasan</h1></div>
     </div>
-    <div class="hero">
+    <div class="hero ${m.remaining < 0 ? 'hero-danger' : ''}">
       <div class="hero-label">SISA ANGGARAN</div>
       <div class="hero-value ${m.remaining < 0 ? 'danger-text' : ''}">${money(m.remaining)}</div>
       <div class="hero-row">
@@ -160,15 +160,15 @@ function renderDashboard() {
       </div>
     </div>
     <div class="stats-grid dashboard-stats">
-      <div class="stat-card"><div class="label">Total Rencana</div><div class="value">${money(m.budget)}</div></div>
-      <div class="stat-card"><div class="label">Realisasi</div><div class="value">${money(m.realized)}</div></div>
-      <div class="stat-card ${m.remaining < 0 ? 'danger' : 'success'}"><div class="label">Sisa Anggaran</div><div class="value">${money(m.remaining)}</div></div>
-      <div class="stat-card"><div class="label">Estimasi Kebutuhan Tersisa</div><div class="value">${money(m.remainingNeedAtPlan)}</div></div>
-      <div class="stat-card ${m.overBudgetCount ? 'danger' : ''}"><div class="label">Lewat Batas</div><div class="value">${m.overBudgetCount} item</div></div>
+      <div class="stat-card metric-budget"><div class="label">Total Rencana</div><div class="value">${money(m.budget)}</div></div>
+      <div class="stat-card metric-realized"><div class="label">Realisasi</div><div class="value">${money(m.realized)}</div></div>
+      <div class="stat-card metric-remaining ${m.remaining < 0 ? 'danger' : 'success'}"><div class="label">Sisa Anggaran</div><div class="value">${money(m.remaining)}</div></div>
+      <div class="stat-card metric-estimate"><div class="label">Estimasi Kebutuhan Tersisa</div><div class="value">${money(m.remainingNeedAtPlan)}</div></div>
+      <div class="stat-card metric-alert ${m.overBudgetCount ? 'danger' : ''}"><div class="label">Lewat Batas</div><div class="value">${m.overBudgetCount} item</div></div>
     </div>
     <div class="category-insight">
-      <div class="category-insight-card"><div><span>Bahan</span><strong>${money(m.category.Bahan.realized)}</strong></div><small>dari ${money(m.category.Bahan.budget)}</small></div>
-      <div class="category-insight-card"><div><span>Upah</span><strong>${money(m.category.Upah.realized)}</strong></div><small>dari ${money(m.category.Upah.budget)}</small></div>
+      <div class="category-insight-card category-material"><div><span>Bahan</span><strong>${money(m.category.Bahan.realized)}</strong></div><small>dari ${money(m.category.Bahan.budget)}</small></div>
+      <div class="category-insight-card category-labor"><div><span>Upah</span><strong>${money(m.category.Upah.realized)}</strong></div><small>dari ${money(m.category.Upah.budget)}</small></div>
     </div>
     <div class="action-row">
       <button class="action-card" data-action="quick-realization" type="button">${icons.cart}<span>Catat belanja cepat</span></button>
@@ -242,7 +242,7 @@ function renderItemCard(item) {
   const pct = Math.round(m.progress * 100);
   const varianceClass = m.avgPriceVariance > 0 ? 'negative' : m.avgPriceVariance < 0 ? 'positive-text' : '';
   const varianceText = m.realizedQty ? `${m.avgPriceVariance > 0 ? '+' : ''}${money(m.avgPriceVariance)}/${esc(item.unit)}` : 'Belum ada';
-  return `<article class="item-card">
+  return `<article class="item-card ${m.isOverBudget ? 'item-over' : ''}">
     <div class="item-top">
       <div class="item-main"><div class="item-name">${esc(item.name)}</div><div class="item-meta"><span class="badge">${esc(item.category)}</span><span>${number(item.plannedQty)} ${esc(item.unit)} × ${money(item.plannedUnitPrice)}</span></div></div>
       <button class="menu-button" type="button" data-action="item-menu" data-id="${item.id}" aria-label="Aksi item">${icons.more}</button>
@@ -282,7 +282,7 @@ function renderTransactionCard(r) {
       <div class="transaction-main"><div class="transaction-name">${esc(item.name)}</div><div class="item-meta"><span>${formatDate(r.date)}</span><span>•</span><span>${number(r.qty)} ${esc(item.unit)} × ${money(r.actualUnitPrice)}</span></div></div>
       <button class="menu-button" type="button" data-action="realization-menu" data-id="${r.id}" aria-label="Aksi realisasi">${icons.more}</button>
     </div>
-    <div class="item-numbers"><div class="number-block"><span>Total</span><strong>${money(total)}</strong></div><div class="number-block"><span>Catatan</span><strong>${r.note ? esc(r.note) : '—'}</strong></div></div>
+    <div class="item-numbers transaction-numbers"><div class="number-block transaction-total"><span>Total</span><strong>${money(total)}</strong></div><div class="number-block"><span>Catatan</span><strong>${r.note ? esc(r.note) : '—'}</strong></div></div>
   </article>`;
 }
 
@@ -313,7 +313,7 @@ function renderSettings() {
       </div>
     </section>
     ${currentProject() ? `<section class="setting-card"><h3>Proyek aktif</h3><div class="info-row"><span>Nama</span><strong>${esc(currentProject().name)}</strong></div><div class="info-row"><span>Mulai</span><strong>${formatDate(currentProject().startDate)}</strong></div><button class="secondary-button" style="margin-top:12px" data-action="edit-project" type="button">Ubah proyek</button><button class="text-button danger" style="width:100%;margin-top:8px" data-action="delete-project" type="button">Hapus proyek ini</button></section>` : ''}
-    <p class="caption" style="text-align:center;margin-top:18px">ANGGARAN v0.5 · Offline-first · Tanpa akun</p>`;
+    <p class="caption" style="text-align:center;margin-top:18px">ANGGARAN v0.6 · Offline-first · Tanpa akun</p>`;
 }
 
 function bindViewEvents() {
@@ -1077,7 +1077,7 @@ async function createBackupFile() {
     const data = await exportDataSnapshot();
     const payload = {
       app: 'ANGGARAN',
-      version: '0.5',
+      version: '0.6',
       schemaVersion: BACKUP_SCHEMA_VERSION,
       exportedAt: new Date().toISOString(),
       data
