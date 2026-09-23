@@ -1,4 +1,4 @@
-# ANGGARAN v0.5
+# ANGGARAN v0.6
 
 PWA offline-first untuk menyusun RAB proyek konstruksi dan mencatat realisasi pembelian/pengeluaran.
 
@@ -69,3 +69,13 @@ Semua kolom angka bisnis diformat langsung dengan format Indonesia saat mengetik
 - Validasi form memakai pesan bertema ANGGARAN, bukan popup validasi browser.
 - Harga kosong tidak lagi dianggap Rp0; Rp0 tetap valid bila pengguna memang mengetik 0.
 - Pengamanan tambahan untuk layar sangat sempit, teks panjang, dan overflow horizontal.
+
+
+## v0.6
+- Visual polish tanpa perubahan logika bisnis.
+- Hierarki dashboard diperkuat untuk Rencana, Realisasi, Sisa Anggaran, Estimasi Kebutuhan, dan alert lewat batas.
+- State over-budget dibuat lebih terlihat tanpa mengganggu pembacaan angka.
+- Bottom navigation, sidebar PC, top bar, kartu, tombol, input, sheet, toast, dan empty state diselaraskan ke satu bahasa visual ANGGARAN.
+- Micro-interaction hanya aktif bila perangkat mendukung hover/pointer yang sesuai dan tetap menghormati prefers-reduced-motion.
+- Tampilan desktop menyesuaikan kepadatan kartu di lebar menengah agar tidak memaksa lima kartu terlalu sempit.
+- Tidak ada font, CDN, gambar eksternal, framework UI, atau dependency baru.
