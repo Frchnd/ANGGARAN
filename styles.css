@@ -2054,3 +2054,28 @@ button:focus-visible,
     margin-top: 14px;
   }
 }
+
+
+/* Tablet / large touch screen: keep mobile composition compact instead of stretching. */
+@media (min-width: 700px) {
+  .app-shell[data-layout="mobile"] .topbar,
+  .app-shell[data-layout="mobile"] .view {
+    width: min(calc(100% - 40px), 680px);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .app-shell[data-layout="mobile"] .topbar {
+    padding-left: 4px;
+    padding-right: 4px;
+    background: transparent;
+    backdrop-filter: none;
+  }
+
+  .app-shell[data-layout="mobile"] .bottom-nav {
+    left: 50%;
+    right: auto;
+    width: min(calc(100% - 40px), 680px);
+    transform: translateX(-50%);
+  }
+}
