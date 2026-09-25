@@ -16,7 +16,8 @@ const state = {
   categoryFilter: 'all',
   dateFrom: '',
   dateTo: '',
-  sortOrder: 'newest'
+  sortOrder: 'newest',
+  projectSearch: ''
 };
 
 const els = {
@@ -45,7 +46,8 @@ const icons = {
   chevron: '<svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>',
   wallet: '<svg viewBox="0 0 24 24"><path d="M4 6h14a2 2 0 0 1 2 2v11H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12"/><path d="M15 11h5v5h-5a2.5 2.5 0 0 1 0-5Z"/></svg>',
   filter: '<svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg>',
-  sort: '<svg viewBox="0 0 24 24"><path d="M8 5v14M5 8l3-3 3 3M16 19V5M13 16l3 3 3-3"/></svg>'
+  sort: '<svg viewBox="0 0 24 24"><path d="M8 5v14M5 8l3-3 3 3M16 19V5M13 16l3 3 3-3"/></svg>',
+  check: '<svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>'
 };
 
 const navItems = [
@@ -525,34 +527,17 @@ function renderTransactionCard(transaction) {
 }
 
 function renderProjects() {
+  return state.effectiveLayout === 'desktop' ? renderDesktopProjects() : renderMobileProjects();
+}
+
+function renderMobileProjects() {
   return `
     <div class="page-head">
       <div><p class="eyebrow">Semua project</p><h1>Proyek</h1></div>
     </div>
 
     ${state.projects.length
-      ? `<div class="project-finance-list">${state.projects.map(project => {
-          const metrics = projectMetrics(project.id);
-          const active = project.id === state.currentProjectId;
-          return `<article class="project-finance-card ${active ? 'active' : ''}">
-            <button class="project-finance-select" type="button" data-project-select="${project.id}">
-              <div class="project-finance-head">
-                <div>
-                  <span class="project-status ${project.status === 'done' ? 'done' : ''}">${project.status === 'done' ? 'Selesai' : 'Aktif'}</span>
-                  <strong>${esc(project.name)}</strong>
-                  <small>Mulai ${formatDate(project.startDate)}</small>
-                </div>
-                <span class="project-open">${active ? 'Dipakai' : 'Buka'} ${icons.chevron}</span>
-              </div>
-              <div class="project-finance-metrics">
-                <div><span>Omzet</span><strong>${money(metrics.omzet)}</strong></div>
-                <div><span>Keluar</span><strong>${money(metrics.expense)}</strong></div>
-                <div class="${metrics.profitLoss < 0 ? 'loss' : 'profit'}"><span>${metrics.profitLoss < 0 ? 'Rugi' : 'Untung'}</span><strong>${money(Math.abs(metrics.profitLoss))}</strong></div>
-              </div>
-            </button>
-            <button class="project-menu-button" type="button" data-action="project-menu" data-id="${project.id}" aria-label="Aksi project">${icons.more}</button>
-          </article>`;
-        }).join('')}</div>`
+      ? `<div class="project-finance-list">${state.projects.map(project => renderMobileProjectCard(project)).join('')}</div>`
       : `<div class="empty-state finance-empty">
           <div class="empty-icon">${icons.projects}</div>
           <h2>Belum ada project</h2>
@@ -564,6 +549,108 @@ function renderProjects() {
       <button class="primary-button accent" data-action="new-project" type="button">+ Project baru</button>
     </div>
   `;
+}
+
+function renderMobileProjectCard(project) {
+  const metrics = projectMetrics(project.id);
+  const active = project.id === state.currentProjectId;
+  return `<article class="project-finance-card ${active ? 'active' : ''}">
+    <button class="project-finance-select" type="button" data-project-select="${project.id}">
+      <div class="project-finance-head">
+        <div>
+          <span class="project-status ${project.status === 'done' ? 'done' : ''}">${project.status === 'done' ? 'Selesai' : 'Aktif'}</span>
+          <strong>${esc(project.name)}</strong>
+          <small>Mulai ${formatDate(project.startDate)}</small>
+        </div>
+        <span class="project-open">${active ? 'Dipakai' : 'Buka'} ${icons.chevron}</span>
+      </div>
+      <div class="project-finance-metrics">
+        <div><span>Omzet</span><strong>${money(metrics.omzet)}</strong></div>
+        <div><span>Keluar</span><strong>${money(metrics.expense)}</strong></div>
+        <div class="${metrics.profitLoss < 0 ? 'loss' : 'profit'}"><span>${metrics.profitLoss < 0 ? 'Rugi' : 'Untung'}</span><strong>${money(Math.abs(metrics.profitLoss))}</strong></div>
+      </div>
+    </button>
+    <button class="project-menu-button" type="button" data-action="project-menu" data-id="${project.id}" aria-label="Aksi project">${icons.more}</button>
+  </article>`;
+}
+
+function renderDesktopProjects() {
+  const query = state.projectSearch.trim().toLocaleLowerCase('id');
+  const filtered = state.projects.filter(project => !query || project.name.toLocaleLowerCase('id').includes(query));
+  const activeCount = state.projects.filter(project => project.status !== 'done').length;
+  const doneCount = state.projects.filter(project => project.status === 'done').length;
+
+  return `
+    <div class="desktop-reference projects-reference">
+      <div class="desktop-projects-head">
+        <div class="desktop-page-title">
+          <p>KEUANGAN PROJECT</p>
+          <h1>Proyek</h1>
+        </div>
+        <div class="desktop-project-actions">
+          <div class="search-field desktop-project-search">${icons.search}<input id="projectSearch" type="search" autocomplete="off" placeholder="Cari nama proyek..." value="${esc(state.projectSearch)}"></div>
+          <button class="desktop-new-project" data-action="new-project" type="button">${icons.plus}<span>Proyek Baru</span></button>
+        </div>
+      </div>
+
+      <div class="desktop-project-kpis">
+        <article class="project-kpi">
+          <span class="project-kpi-icon total">${icons.projects}</span>
+          <div><span>Total Project</span><strong>${state.projects.length}</strong></div>
+        </article>
+        <article class="project-kpi">
+          <span class="project-kpi-icon active">▶</span>
+          <div><span>Project Aktif</span><strong>${activeCount}</strong></div>
+        </article>
+        <article class="project-kpi">
+          <span class="project-kpi-icon done">${icons.check}</span>
+          <div><span>Selesai</span><strong>${doneCount}</strong></div>
+        </article>
+      </div>
+
+      <div class="desktop-project-section-title"><h2>Daftar Project</h2></div>
+
+      <div class="desktop-project-grid">
+        <div class="desktop-project-list">
+          ${filtered.length
+            ? filtered.map(project => renderDesktopProjectCard(project)).join('')
+            : `<div class="desktop-project-empty"><div class="empty-icon">${icons.projects}</div><strong>Project tidak ditemukan</strong><span>Coba kata pencarian lain.</span></div>`
+          }
+        </div>
+
+        <aside class="desktop-project-create">
+          <div class="project-create-icon">${icons.projects}</div>
+          <h2>Buat Project Baru</h2>
+          <p>Mulai project baru untuk mencatat omzet, pengeluaran, dan memantau keuntungan project.</p>
+          <button class="desktop-project-create-button" data-action="new-project" type="button">${icons.plus}<span>Proyek Baru</span></button>
+        </aside>
+      </div>
+    </div>`;
+}
+
+function renderDesktopProjectCard(project) {
+  const metrics = projectMetrics(project.id);
+  const active = project.status !== 'done';
+  return `
+    <article class="desktop-project-card">
+      <div class="desktop-project-card-head">
+        <span class="desktop-project-folder">${icons.projects}</span>
+        <div class="desktop-project-card-title">
+          <strong>${esc(project.name)}</strong>
+          <small>Mulai ${formatDate(project.startDate)}</small>
+        </div>
+        <span class="desktop-project-status ${active ? 'active' : 'done'}">${active ? '● Aktif' : '✓ Selesai'}</span>
+        <button class="desktop-project-menu" type="button" data-action="project-menu" data-id="${project.id}" aria-label="Aksi project">${icons.more}</button>
+      </div>
+
+      <div class="desktop-project-card-metrics">
+        <div><span>OMZET</span><strong>${money(metrics.omzet)}</strong></div>
+        <div><span>PENGELUARAN</span><strong>${money(metrics.expense)}</strong></div>
+        <div><span>UNTUNG / RUGI</span><strong class="${metrics.profitLoss < 0 ? 'expense-text' : ''}">${money(metrics.profitLoss)}</strong></div>
+      </div>
+
+      <button class="desktop-open-project" type="button" data-project-select="${project.id}">${icons.projects}<span>Buka Project</span></button>
+    </article>`;
 }
 
 function renderSettings() {
@@ -597,7 +684,7 @@ function renderSettings() {
         <button class="secondary-button" style="margin-top:12px" data-action="edit-project" type="button">Ubah project</button>
       </section>` : ''}
 
-    <p class="caption app-version">ANGGARAN v0.8.1 · Keuangan Project · Offline-first</p>
+    <p class="caption app-version">ANGGARAN v0.9 · Keuangan Project · Offline-first</p>
   `;
 }
 
@@ -656,6 +743,22 @@ function bindViewEvents() {
     render();
   });
 
+  const projectSearch = document.getElementById('projectSearch');
+  if (projectSearch) {
+    projectSearch.addEventListener('input', event => {
+      const start = event.target.selectionStart;
+      state.projectSearch = event.target.value;
+      render();
+      requestAnimationFrame(() => {
+        const next = document.getElementById('projectSearch');
+        if (next) {
+          next.focus({ preventScroll: true });
+          next.setSelectionRange(start, start);
+        }
+      });
+    });
+  }
+
   const search = document.getElementById('transactionSearch');
   if (search) {
     search.addEventListener('input', event => {
@@ -676,6 +779,7 @@ function bindViewEvents() {
 function navigate(view) {
   state.view = view;
   state.search = '';
+  if (view !== 'projects') state.projectSearch = '';
   if (view !== 'transactions') {
     state.flowFilter = 'all';
     state.dateFrom = '';
@@ -1391,7 +1495,7 @@ async function createBackupFile() {
     const data = await exportDataSnapshot();
     const payload = {
       app: 'ANGGARAN',
-      version: '0.8.1',
+      version: '0.9',
       schemaVersion: BACKUP_SCHEMA_VERSION,
       exportedAt: new Date().toISOString(),
       data
