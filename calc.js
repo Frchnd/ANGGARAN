@@ -5,7 +5,9 @@ export function num(value) {
 
 export function money(value) {
   return new Intl.NumberFormat('id-ID', {
-    style: 'currency', currency: 'IDR', maximumFractionDigits: 0
+    style: 'currency',
+    currency: 'IDR',
+    maximumFractionDigits: 0
   }).format(num(value));
 }
 
@@ -13,65 +15,41 @@ export function number(value, max = 2) {
   return new Intl.NumberFormat('id-ID', { maximumFractionDigits: max }).format(num(value));
 }
 
-export function itemMetrics(item, realizations = []) {
-  const plannedQty = num(item.plannedQty);
-  const plannedUnitPrice = num(item.plannedUnitPrice);
-  const plannedSubtotal = plannedQty * plannedUnitPrice;
-  const realizedQty = realizations.reduce((sum, r) => sum + num(r.qty), 0);
-  const realizedNominal = realizations.reduce((sum, r) => sum + num(r.qty) * num(r.actualUnitPrice), 0);
-  const avgActualPrice = realizedQty > 0 ? realizedNominal / realizedQty : 0;
-  const remainingQty = plannedQty - realizedQty;
-  // "remainingNominal" = uang budget yang belum terpakai.
-  const remainingNominal = plannedSubtotal - realizedNominal;
-  // "remainingNeedAtPlan" = estimasi kebutuhan yang belum dibeli memakai harga rencana.
-  const remainingNeedAtPlan = Math.max(remainingQty, 0) * plannedUnitPrice;
-  const estimatedFinalAtPlan = realizedNominal + remainingNeedAtPlan;
-  const estimatedFinalVariance = plannedSubtotal - estimatedFinalAtPlan;
-  const avgPriceVariance = realizedQty > 0 ? avgActualPrice - plannedUnitPrice : 0;
-  const isOverBudget = realizedNominal > plannedSubtotal || realizedQty > plannedQty;
-  const progress = plannedSubtotal > 0 ? Math.max(0, realizedNominal / plannedSubtotal) : 0;
+export function projectFinanceMetrics(transactions = []) {
+  let income = 0;
+  let expense = 0;
+  let incomeCount = 0;
+  let expenseCount = 0;
+
+  for (const transaction of transactions) {
+    const amount = Math.max(0, num(transaction.amount));
+    if (transaction.type === 'income') {
+      income += amount;
+      incomeCount += 1;
+    } else if (transaction.type === 'expense') {
+      expense += amount;
+      expenseCount += 1;
+    }
+  }
+
   return {
-    plannedQty, plannedUnitPrice, plannedSubtotal, realizedQty, realizedNominal,
-    avgActualPrice, remainingQty, remainingNominal, remainingNeedAtPlan,
-    estimatedFinalAtPlan, estimatedFinalVariance, avgPriceVariance, isOverBudget, progress
+    omzet: income,
+    expense,
+    profitLoss: income - expense,
+    incomeCount,
+    expenseCount,
+    transactionCount: incomeCount + expenseCount
   };
 }
 
-export function projectMetrics(items = [], realizations = []) {
-  const byItem = new Map();
-  for (const r of realizations) {
-    if (!byItem.has(r.itemId)) byItem.set(r.itemId, []);
-    byItem.get(r.itemId).push(r);
+export function categoryTotals(transactions = [], type = null) {
+  const totals = new Map();
+  for (const transaction of transactions) {
+    if (type && transaction.type !== type) continue;
+    const key = String(transaction.category || 'Lainnya').trim() || 'Lainnya';
+    totals.set(key, (totals.get(key) || 0) + Math.max(0, num(transaction.amount)));
   }
-  let budget = 0;
-  let realized = 0;
-  let overBudgetCount = 0;
-  let remainingNeedAtPlan = 0;
-  const category = {
-    Bahan: { budget: 0, realized: 0 },
-    Upah: { budget: 0, realized: 0 }
-  };
-  const metrics = new Map();
-  for (const item of items) {
-    const m = itemMetrics(item, byItem.get(item.id) || []);
-    metrics.set(item.id, m);
-    budget += m.plannedSubtotal;
-    realized += m.realizedNominal;
-    remainingNeedAtPlan += m.remainingNeedAtPlan;
-    if (category[item.category]) {
-      category[item.category].budget += m.plannedSubtotal;
-      category[item.category].realized += m.realizedNominal;
-    }
-    if (m.isOverBudget) overBudgetCount += 1;
-  }
-  return {
-    budget,
-    realized,
-    remaining: budget - realized,
-    remainingNeedAtPlan,
-    progress: budget > 0 ? realized / budget : 0,
-    overBudgetCount,
-    category,
-    itemMetrics: metrics
-  };
+  return [...totals.entries()]
+    .map(([category, amount]) => ({ category, amount }))
+    .sort((a, b) => b.amount - a.amount || a.category.localeCompare(b.category, 'id'));
 }
