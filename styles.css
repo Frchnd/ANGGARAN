@@ -2079,3 +2079,135 @@ button:focus-visible,
     transform: translateX(-50%);
   }
 }
+
+
+/* v0.7.2 — screenshot-driven desktop/tablet fixes */
+
+/* Header/project title is part of document flow: it must scroll away, never stick. */
+.topbar {
+  position: relative;
+  top: auto;
+  z-index: 10;
+  justify-content: flex-start;
+}
+
+/* Lock touch layout to scrolling only, not pinch-zoom. */
+html,
+body,
+.app-shell {
+  touch-action: pan-y;
+}
+
+/* Desktop navigation stays low in the sidebar. */
+.app-shell[data-layout="desktop"] .desktop-nav {
+  margin-top: auto;
+  margin-bottom: 12px;
+}
+
+.app-shell[data-layout="desktop"] .sidebar-foot {
+  margin-top: 0;
+  padding-top: 8px;
+}
+
+/* The desktop summary itself fits inside the current viewport. */
+.app-shell[data-layout="desktop"] .dashboard-screen {
+  height: calc(100dvh - 118px);
+  min-height: 540px;
+  max-height: 780px;
+  grid-template-rows:
+    auto
+    minmax(0, .9fr)
+    minmax(0, .62fr)
+    minmax(0, 1.18fr);
+  overflow: hidden;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen > * {
+  min-height: 0;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .finance-columns {
+  min-height: 0;
+  height: 100%;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .section {
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .finance-transaction-list,
+.app-shell[data-layout="desktop"] .dashboard-screen .category-spend-list {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding-right: 2px;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .compact-empty {
+  min-height: 0;
+  flex: 1;
+  display: grid;
+  place-content: center;
+  padding: 14px;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .compact-empty .empty-icon {
+  width: 42px;
+  height: 42px;
+  margin-bottom: 8px;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .compact-empty h2 {
+  font-size: 14px;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .compact-empty p {
+  font-size: 11px;
+}
+
+/* With no header action button, keep the project switcher compact. */
+.app-shell[data-layout="desktop"] .topbar .project-switcher {
+  max-width: min(420px, 70%);
+}
+
+/* On short laptop/tablet PC viewports, compress without making the whole page scroll. */
+@media (max-height: 760px) and (min-width: 900px) {
+  .app-shell[data-layout="desktop"] .dashboard-screen {
+    height: calc(100dvh - 104px);
+    min-height: 500px;
+    grid-template-rows:
+      auto
+      minmax(0, .82fr)
+      minmax(0, .56fr)
+      minmax(0, 1fr);
+    row-gap: 7px;
+  }
+
+  .app-shell[data-layout="desktop"] .dashboard-screen > .finance-hero {
+    min-height: 0;
+    padding: 16px 18px;
+  }
+
+  .app-shell[data-layout="desktop"] .dashboard-screen .finance-hero-value {
+    font-size: 36px;
+  }
+
+  .app-shell[data-layout="desktop"] .dashboard-screen .finance-hero-foot {
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+
+  .app-shell[data-layout="desktop"] .dashboard-screen .finance-kpi {
+    min-height: 62px;
+    padding: 8px 10px;
+  }
+
+  .app-shell[data-layout="desktop"] .dashboard-screen .cash-action {
+    min-height: 62px;
+    padding: 8px 10px;
+  }
+}
