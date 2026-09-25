@@ -1,4 +1,4 @@
-# ANGGARAN v0.8.1
+# ANGGARAN v0.9
 
 ANGGARAN sekarang difokuskan sebagai aplikasi pencatatan keuangan per project.
 
@@ -118,3 +118,14 @@ v0.7 mengubah total fokus aplikasi dari RAB/realisasi barang menjadi pencatatan 
 - Ringkasan desktop tetap muat satu viewport; tabel mengambil sisa ruang secara proporsional.
 - Mobile tetap memakai komposisi satu kolom yang rapi dengan bottom navigation 3 tab.
 - Auto layout: viewport >=700px menggunakan layout PC/Tablet.
+
+
+## v0.9 approved desktop visual
+- Desktop Ringkasan, Transaksi, dan Proyek disusun mengikuti visual referensi yang sudah disetujui.
+- Header desktop memakai mark A amber, nama ANGGARAN, project aktif, dan tombol Pengaturan di kanan.
+- Bottom navigation desktop berisi Ringkasan / Transaksi / Proyek, fixed-width, centered, dan tidak stretch.
+- Transaksi desktop memakai layout judul + search/filter, tiga KPI, control bar, tombol Uang Masuk/Keluar, dan tabel besar.
+- Proyek desktop memakai judul + search + Proyek Baru, tiga KPI project, daftar project kiri, dan panel Buat Project Baru kanan.
+- Ringkasan desktop ditingkatkan keterbacaannya: font lebih besar, hero dan KPI lebih lega, panel kosong tidak terlalu pipih, dan tabel tetap proporsional.
+- Tablet >=700px tetap memakai layout PC yang dikompres tanpa horizontal overflow.
+- Mobile tetap memakai layout satu kolom dan bottom navigation tiga tab.
