@@ -1,4 +1,4 @@
-# ANGGARAN v0.7
+# ANGGARAN v0.7.1
 
 ANGGARAN sekarang difokuskan sebagai aplikasi pencatatan keuangan per project.
 
@@ -79,3 +79,13 @@ Static site, tanpa build command.
 
 ## Riwayat pivot
 v0.7 mengubah total fokus aplikasi dari RAB/realisasi barang menjadi pencatatan keuangan per project. Tema visual charcoal + amber + warm off-white dipertahankan, dengan hijau untuk uang masuk/untung dan merah untuk uang keluar/rugi.
+
+
+## v0.7.1 UI/UX polish
+- Tema visual dikonsolidasikan ke warm off-white, charcoal, amber, dengan hijau/merah hanya untuk makna keuangan.
+- Logo aplikasi dan ikon PWA 192/512 diganti dengan mark A geometris yang simetris.
+- Nama tab Ringkas menjadi Ringkasan.
+- Ringkasan mode PC dibuat lebih padat agar informasi utama muat dalam satu viewport pada layar laptop/desktop normal.
+- Tombol tambah project di header tab Proyek dihapus. Satu jalur tambah project tetap melalui tombol + Project baru.
+- Mode PC memakai canvas terpusat maksimum 1000px agar tidak stretch mengikuti monitor.
+- Layout Mobile pada tablet/layar touch >=700px dibatasi maksimum 680px agar card tidak melebar.
