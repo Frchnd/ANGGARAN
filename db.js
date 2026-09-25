@@ -1,5 +1,5 @@
 const DB_NAME = 'anggaran-db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 let dbPromise;
 
 function openDB() {
@@ -8,6 +8,7 @@ function openDB() {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     request.onupgradeneeded = () => {
       const db = request.result;
+
       if (!db.objectStoreNames.contains('projects')) {
         const projects = db.createObjectStore('projects', { keyPath: 'id' });
         projects.createIndex('updatedAt', 'updatedAt');
@@ -19,6 +20,12 @@ function openDB() {
       if (!db.objectStoreNames.contains('realizations')) {
         const realizations = db.createObjectStore('realizations', { keyPath: 'id' });
         realizations.createIndex('itemId', 'itemId');
+      }
+      if (!db.objectStoreNames.contains('transactions')) {
+        const transactions = db.createObjectStore('transactions', { keyPath: 'id' });
+        transactions.createIndex('projectId', 'projectId');
+        transactions.createIndex('date', 'date');
+        transactions.createIndex('type', 'type');
       }
       if (!db.objectStoreNames.contains('settings')) {
         db.createObjectStore('settings', { keyPath: 'key' });
@@ -84,52 +91,48 @@ export async function deleteProjectCascade(projectId) {
   const items = await getByIndex('items', 'projectId', projectId);
   const itemIds = new Set(items.map(item => item.id));
   const realizations = await getAll('realizations');
-  const tx = db.transaction(['projects', 'items', 'realizations'], 'readwrite');
+  const transactions = await getByIndex('transactions', 'projectId', projectId);
+
+  const tx = db.transaction(['projects', 'items', 'realizations', 'transactions'], 'readwrite');
   tx.objectStore('projects').delete(projectId);
   for (const item of items) tx.objectStore('items').delete(item.id);
   for (const realization of realizations) {
     if (itemIds.has(realization.itemId)) tx.objectStore('realizations').delete(realization.id);
   }
+  for (const transaction of transactions) tx.objectStore('transactions').delete(transaction.id);
+
   return new Promise((resolve, reject) => {
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
     tx.onabort = () => reject(tx.error);
   });
 }
-
-export async function deleteItemCascade(itemId) {
-  const db = await openDB();
-  const realizations = await getByIndex('realizations', 'itemId', itemId);
-  const tx = db.transaction(['items', 'realizations'], 'readwrite');
-  tx.objectStore('items').delete(itemId);
-  for (const realization of realizations) tx.objectStore('realizations').delete(realization.id);
-  return new Promise((resolve, reject) => {
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-    tx.onabort = () => reject(tx.error);
-  });
-}
-
 
 export async function exportDataSnapshot() {
-  const [projects, items, realizations] = await Promise.all([
+  const [projects, transactions, items, realizations] = await Promise.all([
     getAll('projects'),
+    getAll('transactions'),
     getAll('items'),
     getAll('realizations')
   ]);
-  return { projects, items, realizations };
+  return {
+    projects,
+    transactions,
+    legacy: { items, realizations }
+  };
 }
 
 export async function restoreDataSnapshot(snapshot) {
   const db = await openDB();
-  const stores = ['projects', 'items', 'realizations'];
+  const stores = ['projects', 'transactions', 'items', 'realizations'];
   const tx = db.transaction(stores, 'readwrite');
 
-  for (const storeName of stores) {
-    const store = tx.objectStore(storeName);
-    store.clear();
-    for (const value of snapshot[storeName] || []) store.put(value);
-  }
+  for (const storeName of stores) tx.objectStore(storeName).clear();
+
+  for (const project of snapshot.projects || []) tx.objectStore('projects').put(project);
+  for (const transaction of snapshot.transactions || []) tx.objectStore('transactions').put(transaction);
+  for (const item of snapshot.legacy?.items || snapshot.items || []) tx.objectStore('items').put(item);
+  for (const realization of snapshot.legacy?.realizations || snapshot.realizations || []) tx.objectStore('realizations').put(realization);
 
   return new Promise((resolve, reject) => {
     tx.oncomplete = () => resolve();
