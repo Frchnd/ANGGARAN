@@ -19,7 +19,6 @@ const els = {
   app: document.getElementById('app'),
   view: document.getElementById('view'),
   bottomNav: document.getElementById('bottomNav'),
-  desktopNav: document.getElementById('desktopNav'),
   projectSwitcher: document.getElementById('projectSwitcher'),
   projectNameHeader: document.getElementById('projectNameHeader'),
   overlayRoot: document.getElementById('overlayRoot'),
@@ -109,9 +108,8 @@ async function reloadData() {
 function resolveLayout() {
   let layout = state.layoutMode;
   if (layout === 'auto') {
-    const wide = window.matchMedia('(min-width: 900px)').matches;
-    const finePointer = window.matchMedia('(pointer: fine)').matches;
-    layout = wide && finePointer ? 'desktop' : 'mobile';
+    const tabletOrLarger = window.matchMedia('(min-width: 700px)').matches;
+    layout = tabletOrLarger ? 'desktop' : 'mobile';
   }
   state.effectiveLayout = layout;
   els.app.dataset.layout = layout;
@@ -123,7 +121,6 @@ function renderNav() {
       <span class="nav-icon">${icon}</span><span>${label}</span>
     </button>`).join('');
   els.bottomNav.innerHTML = html;
-  els.desktopNav.innerHTML = html;
 }
 
 function renderHeader() {
@@ -132,6 +129,7 @@ function renderHeader() {
 
 function render() {
   resolveLayout();
+  els.app.dataset.view = state.view;
   renderNav();
   renderHeader();
 
@@ -390,7 +388,7 @@ function renderSettings() {
         <button class="secondary-button" style="margin-top:12px" data-action="edit-project" type="button">Ubah project</button>
       </section>` : ''}
 
-    <p class="caption app-version">ANGGARAN v0.7.2 · Keuangan Project · Offline-first</p>
+    <p class="caption app-version">ANGGARAN v0.7.3 · Keuangan Project · Offline-first</p>
   `;
 }
 
@@ -1148,7 +1146,7 @@ async function createBackupFile() {
     const data = await exportDataSnapshot();
     const payload = {
       app: 'ANGGARAN',
-      version: '0.7.2',
+      version: '0.7.3',
       schemaVersion: BACKUP_SCHEMA_VERSION,
       exportedAt: new Date().toISOString(),
       data
@@ -1262,13 +1260,11 @@ function bindGlobalEvents() {
 
   els.projectSwitcher.addEventListener('click', openProjectChooser);
 
-  const mqWide = window.matchMedia('(min-width: 900px)');
-  const mqPointer = window.matchMedia('(pointer: fine)');
+  const mqTablet = window.matchMedia('(min-width: 700px)');
   const updateAuto = () => {
     if (state.layoutMode === 'auto') render();
   };
-  mqWide.addEventListener?.('change', updateAuto);
-  mqPointer.addEventListener?.('change', updateAuto);
+  mqTablet.addEventListener?.('change', updateAuto);
 }
 
 async function init() {
