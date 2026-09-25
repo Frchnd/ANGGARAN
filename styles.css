@@ -2211,3 +2211,230 @@ body,
     padding: 8px 10px;
   }
 }
+
+
+/* v0.7.3 — same shell on HP/tablet/PC; only Ringkasan adapts */
+.app-shell[data-layout="desktop"] {
+  display: block;
+  min-height: 100dvh;
+}
+
+.app-shell[data-layout="desktop"] .sidebar {
+  display: none !important;
+}
+
+.app-shell[data-layout="desktop"] .main-shell {
+  min-width: 0;
+  padding-bottom: calc(86px + var(--safe-bottom));
+}
+
+.app-shell[data-layout="desktop"] .bottom-nav {
+  display: grid !important;
+  left: 50%;
+  right: auto;
+  width: min(calc(100% - 32px), 720px);
+  transform: translateX(-50%);
+  bottom: calc(10px + var(--safe-bottom));
+}
+
+.app-shell[data-layout="desktop"] .topbar {
+  width: min(calc(100% - 32px), 680px);
+  margin: 0 auto;
+  padding: calc(12px + var(--safe-top)) 4px 11px;
+  background: transparent;
+  backdrop-filter: none;
+  border-bottom: 1px solid rgba(216,211,200,.72);
+  box-shadow: none;
+}
+
+.app-shell[data-layout="desktop"] .view {
+  width: min(calc(100% - 32px), 680px);
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 18px 0 104px;
+}
+
+/* Other tabs keep the same single-column composition as Mobile. */
+.app-shell[data-layout="desktop"]:not([data-view="dashboard"]) .finance-toolbar {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.app-shell[data-layout="desktop"]:not([data-view="dashboard"]) .finance-toolbar .search-field,
+.app-shell[data-layout="desktop"]:not([data-view="dashboard"]) .finance-filter {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
+
+.app-shell[data-layout="desktop"]:not([data-view="dashboard"]) .finance-transaction-list,
+.app-shell[data-layout="desktop"]:not([data-view="dashboard"]) .project-finance-list {
+  grid-template-columns: 1fr;
+}
+
+.app-shell[data-layout="desktop"] .desktop-only {
+  display: none !important;
+}
+
+.app-shell[data-layout="desktop"] .mobile-cash-actions {
+  display: grid;
+}
+
+/* Tablet/PC Ringkasan alone uses the larger canvas. */
+.app-shell[data-layout="desktop"][data-view="dashboard"] {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.app-shell[data-layout="desktop"][data-view="dashboard"] .main-shell {
+  height: 100dvh;
+  min-height: 0;
+  padding-bottom: 0;
+  overflow: hidden;
+}
+
+.app-shell[data-layout="desktop"][data-view="dashboard"] .topbar {
+  width: min(calc(100% - 32px), 1000px);
+}
+
+.app-shell[data-layout="desktop"][data-view="dashboard"] .view {
+  width: min(calc(100% - 32px), 1000px);
+  max-width: 1000px;
+  height: calc(100dvh - 62px);
+  padding: 10px 0 calc(82px + var(--safe-bottom));
+  overflow: hidden;
+}
+
+.app-shell[data-layout="desktop"][data-view="dashboard"] .dashboard-screen {
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(0,1.25fr) minmax(280px,.75fr);
+  grid-template-areas:
+    "head head"
+    "hero kpi"
+    "hero actions"
+    "content content";
+  grid-template-rows:
+    auto
+    minmax(0,.92fr)
+    minmax(0,.62fr)
+    minmax(0,1.2fr);
+  gap: 8px 12px;
+}
+
+.app-shell[data-layout="desktop"][data-view="dashboard"] .dashboard-screen > .finance-page-head {
+  grid-area: head;
+  margin-bottom: 0;
+}
+
+.app-shell[data-layout="desktop"][data-view="dashboard"] .dashboard-screen > .finance-hero {
+  grid-area: hero;
+  min-height: 0;
+  height: 100%;
+  margin: 0;
+  padding: 18px 20px;
+}
+
+.app-shell[data-layout="desktop"][data-view="dashboard"] .dashboard-screen > .finance-kpi-grid {
+  grid-area: kpi;
+  grid-template-columns: 1fr;
+  gap: 7px;
+  margin: 0;
+}
+
+.app-shell[data-layout="desktop"][data-view="dashboard"] .dashboard-screen > .cash-action-grid {
+  grid-area: actions;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 7px;
+  margin: 0;
+}
+
+.app-shell[data-layout="desktop"][data-view="dashboard"] .dashboard-screen > .finance-columns {
+  grid-area: content;
+  min-height: 0;
+  height: 100%;
+  display: grid;
+  grid-template-columns: minmax(0,1.25fr) minmax(260px,.75fr);
+  gap: 10px;
+  align-items: stretch;
+}
+
+.app-shell[data-layout="desktop"][data-view="dashboard"] .dashboard-screen .section {
+  min-height: 0;
+  height: 100%;
+  margin-top: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-shell[data-layout="desktop"][data-view="dashboard"] .dashboard-screen .section-head {
+  margin-bottom: 6px;
+}
+
+.app-shell[data-layout="desktop"][data-view="dashboard"] .dashboard-screen .finance-transaction-list,
+.app-shell[data-layout="desktop"][data-view="dashboard"] .dashboard-screen .category-spend-list {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.app-shell[data-layout="desktop"][data-view="dashboard"] .dashboard-screen .finance-transaction-list {
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 6px;
+}
+
+.app-shell[data-layout="desktop"][data-view="dashboard"] .dashboard-screen .finance-kpi {
+  min-height: 0;
+  padding: 9px 11px;
+}
+
+.app-shell[data-layout="desktop"][data-view="dashboard"] .dashboard-screen .cash-action {
+  min-height: 0;
+  padding: 9px 10px;
+}
+
+.app-shell[data-layout="desktop"][data-view="dashboard"] .dashboard-screen .cash-action small {
+  display: none;
+}
+
+.app-shell[data-layout="desktop"][data-view="dashboard"] .dashboard-screen .compact-empty {
+  min-height: 0;
+  flex: 1;
+  display: grid;
+  place-content: center;
+  padding: 10px;
+}
+
+@media (max-height: 760px) and (min-width: 700px) {
+  .app-shell[data-layout="desktop"][data-view="dashboard"] .view {
+    height: calc(100dvh - 58px);
+    padding-top: 6px;
+    padding-bottom: calc(78px + var(--safe-bottom));
+  }
+
+  .app-shell[data-layout="desktop"][data-view="dashboard"] .dashboard-screen {
+    grid-template-rows:
+      auto
+      minmax(0,.82fr)
+      minmax(0,.52fr)
+      minmax(0,1fr);
+    gap: 6px 9px;
+  }
+
+  .app-shell[data-layout="desktop"][data-view="dashboard"] .finance-page-head h1 {
+    font-size: 28px;
+  }
+
+  .app-shell[data-layout="desktop"][data-view="dashboard"] .finance-hero-value {
+    font-size: 34px;
+  }
+
+  .app-shell[data-layout="desktop"][data-view="dashboard"] .finance-hero-foot {
+    margin-top: 9px;
+    padding-top: 9px;
+  }
+}
