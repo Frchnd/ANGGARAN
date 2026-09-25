@@ -12,7 +12,11 @@ const state = {
   layoutMode: 'auto',
   effectiveLayout: 'mobile',
   search: '',
-  flowFilter: 'all'
+  flowFilter: 'all',
+  categoryFilter: 'all',
+  dateFrom: '',
+  dateTo: '',
+  sortOrder: 'newest'
 };
 
 const els = {
@@ -21,6 +25,7 @@ const els = {
   bottomNav: document.getElementById('bottomNav'),
   projectSwitcher: document.getElementById('projectSwitcher'),
   projectNameHeader: document.getElementById('projectNameHeader'),
+  settingsButton: document.getElementById('settingsButton'),
   overlayRoot: document.getElementById('overlayRoot'),
   toastRoot: document.getElementById('toastRoot')
 };
@@ -38,14 +43,15 @@ const icons = {
   close: '<svg viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></svg>',
   calendar: '<svg viewBox="0 0 24 24"><path d="M6 3v3M18 3v3M4 8h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z"/></svg>',
   chevron: '<svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>',
-  wallet: '<svg viewBox="0 0 24 24"><path d="M4 6h14a2 2 0 0 1 2 2v11H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12"/><path d="M15 11h5v5h-5a2.5 2.5 0 0 1 0-5Z"/></svg>'
+  wallet: '<svg viewBox="0 0 24 24"><path d="M4 6h14a2 2 0 0 1 2 2v11H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h12"/><path d="M15 11h5v5h-5a2.5 2.5 0 0 1 0-5Z"/></svg>',
+  filter: '<svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg>',
+  sort: '<svg viewBox="0 0 24 24"><path d="M8 5v14M5 8l3-3 3 3M16 19V5M13 16l3 3 3-3"/></svg>'
 };
 
 const navItems = [
   ['dashboard', 'Ringkasan', icons.dashboard],
   ['transactions', 'Transaksi', icons.transactions],
-  ['projects', 'Proyek', icons.projects],
-  ['settings', 'Pengaturan', icons.settings]
+  ['projects', 'Proyek', icons.projects]
 ];
 
 const INCOME_CATEGORIES = ['Pembayaran', 'DP', 'Termin', 'Tambahan', 'Lainnya'];
@@ -160,110 +166,222 @@ function renderNoProject() {
 }
 
 function renderDashboard() {
+  return state.effectiveLayout === 'desktop' ? renderDesktopDashboard() : renderMobileDashboard();
+}
+
+function renderMobileDashboard() {
   const metrics = projectMetrics();
   const transactions = projectTransactions();
-  const recentLimit = state.effectiveLayout === 'desktop' ? 4 : 5;
-  const spendingLimit = state.effectiveLayout === 'desktop' ? 3 : 5;
-  const recent = transactions.slice(0, recentLimit);
-  const spending = categoryTotals(transactions, 'expense').slice(0, spendingLimit);
+  const recent = transactions.slice(0, 5);
+  const spending = categoryTotals(transactions, 'expense').slice(0, 5);
   const resultClass = metrics.profitLoss > 0 ? 'profit' : metrics.profitLoss < 0 ? 'loss' : 'neutral';
   const resultLabel = metrics.profitLoss > 0 ? 'UNTUNG SEMENTARA' : metrics.profitLoss < 0 ? 'RUGI SEMENTARA' : 'UNTUNG / RUGI';
 
   return `
     <div class="dashboard-screen">
-    <div class="page-head finance-page-head">
-      <div>
-        <p class="eyebrow">Keuangan project</p>
-        <h1>Ringkasan</h1>
+      <div class="page-head finance-page-head">
+        <div><p class="eyebrow">Keuangan project</p><h1>Ringkasan</h1></div>
       </div>
-    </div>
 
-    <section class="finance-hero ${resultClass}">
-      <div class="finance-hero-top">
-        <span>${resultLabel}</span>
-        <span class="finance-hero-count">${metrics.transactionCount} transaksi</span>
-      </div>
-      <div class="finance-hero-value">${money(metrics.profitLoss)}</div>
-      <div class="finance-hero-foot">
-        <div><span>OMZET</span><strong>${money(metrics.omzet)}</strong></div>
-        <div><span>PENGELUARAN</span><strong>${money(metrics.expense)}</strong></div>
-      </div>
-    </section>
-
-    <div class="finance-kpi-grid">
-      <article class="finance-kpi income">
-        <span class="finance-kpi-icon">${icons.income}</span>
-        <div><span>Omzet</span><strong>${money(metrics.omzet)}</strong><small>${metrics.incomeCount} uang masuk</small></div>
-      </article>
-      <article class="finance-kpi expense">
-        <span class="finance-kpi-icon">${icons.expense}</span>
-        <div><span>Pengeluaran</span><strong>${money(metrics.expense)}</strong><small>${metrics.expenseCount} uang keluar</small></div>
-      </article>
-    </div>
-
-    <div class="cash-action-grid">
-      <button class="cash-action income" type="button" data-action="new-income">
-        <span class="cash-action-icon">${icons.income}</span>
-        <span><strong>Uang Masuk</strong><small>Catat pembayaran project</small></span>
-      </button>
-      <button class="cash-action expense" type="button" data-action="new-expense">
-        <span class="cash-action-icon">${icons.expense}</span>
-        <span><strong>Uang Keluar</strong><small>Catat biaya project</small></span>
-      </button>
-    </div>
-
-    <div class="dashboard-columns finance-columns">
-      <section class="section">
-        <div class="section-head">
-          <h2>Transaksi terbaru</h2>
-          ${recent.length ? '<button class="text-button" data-nav="transactions" type="button">Lihat semua</button>' : ''}
+      <section class="finance-hero ${resultClass}">
+        <div class="finance-hero-top">
+          <span>${resultLabel}</span>
+          <span class="finance-hero-count">${metrics.transactionCount} transaksi</span>
         </div>
-        ${recent.length
-          ? `<div class="card-list finance-transaction-list">${recent.map(renderTransactionCard).join('')}</div>`
-          : `<div class="empty-state compact-empty"><div class="empty-icon">${icons.wallet}</div><h2>Belum ada transaksi</h2><p>Mulai dari Uang Masuk atau Uang Keluar di atas.</p></div>`
-        }
+        <div class="finance-hero-value">${money(metrics.profitLoss)}</div>
+        <div class="finance-hero-foot">
+          <div><span>OMZET</span><strong>${money(metrics.omzet)}</strong></div>
+          <div><span>PENGELUARAN</span><strong>${money(metrics.expense)}</strong></div>
+        </div>
       </section>
 
-      <section class="section">
-        <div class="section-head"><h2>Pengeluaran terbesar</h2></div>
-        ${spending.length
-          ? `<div class="category-spend-list">${spending.map(item => {
-              const pct = metrics.expense > 0 ? Math.round((item.amount / metrics.expense) * 100) : 0;
-              return `<div class="category-spend">
-                <div><strong>${esc(item.category)}</strong><span>${pct}% dari pengeluaran</span></div>
-                <strong>${money(item.amount)}</strong>
-                <div class="category-spend-track"><i style="width:${Math.min(pct,100)}%"></i></div>
-              </div>`;
-            }).join('')}</div>`
-          : `<div class="empty-state compact-empty"><p>Belum ada uang keluar di project ini.</p></div>`
-        }
+      <div class="finance-kpi-grid">
+        <article class="finance-kpi income">
+          <span class="finance-kpi-icon">${icons.income}</span>
+          <div><span>Omzet</span><strong>${money(metrics.omzet)}</strong><small>${metrics.incomeCount} uang masuk</small></div>
+        </article>
+        <article class="finance-kpi expense">
+          <span class="finance-kpi-icon">${icons.expense}</span>
+          <div><span>Pengeluaran</span><strong>${money(metrics.expense)}</strong><small>${metrics.expenseCount} uang keluar</small></div>
+        </article>
+      </div>
+
+      <div class="cash-action-grid">
+        <button class="cash-action income" type="button" data-action="new-income">
+          <span class="cash-action-icon">${icons.income}</span>
+          <span><strong>Uang Masuk</strong><small>Catat pembayaran project</small></span>
+        </button>
+        <button class="cash-action expense" type="button" data-action="new-expense">
+          <span class="cash-action-icon">${icons.expense}</span>
+          <span><strong>Uang Keluar</strong><small>Catat biaya project</small></span>
+        </button>
+      </div>
+
+      <div class="dashboard-columns finance-columns">
+        <section class="section">
+          <div class="section-head">
+            <h2>Transaksi terbaru</h2>
+            ${recent.length ? '<button class="text-button" data-nav="transactions" type="button">Lihat semua</button>' : ''}
+          </div>
+          ${recent.length
+            ? `<div class="card-list finance-transaction-list">${recent.map(renderTransactionCard).join('')}</div>`
+            : `<div class="empty-state compact-empty"><div class="empty-icon">${icons.wallet}</div><h2>Belum ada transaksi</h2><p>Mulai dari Uang Masuk atau Uang Keluar di atas.</p></div>`
+          }
+        </section>
+        <section class="section">
+          <div class="section-head"><h2>Pengeluaran terbesar</h2></div>
+          ${renderSpendingList(spending, metrics.expense)}
+        </section>
+      </div>
+    </div>`;
+}
+
+function renderDesktopDashboard() {
+  const metrics = projectMetrics();
+  const transactions = projectTransactions();
+  const recent = transactions.slice(0, 4);
+  const spending = categoryTotals(transactions, 'expense').slice(0, 4);
+  const resultClass = metrics.profitLoss > 0 ? 'profit' : metrics.profitLoss < 0 ? 'loss' : 'neutral';
+  const resultLabel = metrics.profitLoss > 0 ? 'UNTUNG SEMENTARA' : metrics.profitLoss < 0 ? 'RUGI SEMENTARA' : 'UNTUNG / RUGI';
+  const filtered = filteredProjectTransactions();
+
+  return `
+    <div class="desktop-reference dashboard-reference">
+      <div class="desktop-page-title"><p>KEUANGAN PROJECT</p><h1>Ringkasan</h1></div>
+
+      <div class="desktop-summary-grid">
+        <section class="finance-hero desktop-hero ${resultClass}">
+          <div class="finance-hero-top"><span>${resultLabel}</span><span class="finance-hero-count">${metrics.transactionCount} transaksi</span></div>
+          <div class="finance-hero-value">${money(metrics.profitLoss)}</div>
+          <div class="finance-hero-foot">
+            <div><span>OMZET</span><strong>${money(metrics.omzet)}</strong></div>
+            <div><span>PENGELUARAN</span><strong>${money(metrics.expense)}</strong></div>
+          </div>
+        </section>
+
+        <div class="desktop-kpi-actions">
+          <article class="finance-kpi income"><span class="finance-kpi-icon">${icons.income}</span><div><span>OMZET</span><strong>${money(metrics.omzet)}</strong><small>${metrics.incomeCount} uang masuk</small></div></article>
+          <article class="finance-kpi expense"><span class="finance-kpi-icon">${icons.expense}</span><div><span>PENGELUARAN</span><strong>${money(metrics.expense)}</strong><small>${metrics.expenseCount} uang keluar</small></div></article>
+          <div class="desktop-action-pair">
+            <button class="cash-action income" type="button" data-action="new-income"><span class="cash-action-icon">${icons.income}</span><strong>Uang Masuk</strong></button>
+            <button class="cash-action expense" type="button" data-action="new-expense"><span class="cash-action-icon">${icons.expense}</span><strong>Uang Keluar</strong></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="desktop-secondary-grid">
+        <section class="desktop-panel">
+          <div class="section-head"><h2>Transaksi terbaru</h2><button class="text-button" data-nav="transactions" type="button">Lihat semua →</button></div>
+          ${recent.length
+            ? `<div class="desktop-recent-list">${recent.map(renderCompactTransaction).join('')}</div>`
+            : `<div class="desktop-empty"><div class="empty-icon">${icons.wallet}</div><strong>Belum ada transaksi</strong><span>Mulai dari Uang Masuk atau Uang Keluar di atas</span></div>`
+          }
+        </section>
+        <section class="desktop-panel">
+          <div class="section-head"><h2>Pengeluaran terbesar</h2></div>
+          ${spending.length
+            ? renderSpendingList(spending, metrics.expense)
+            : `<div class="desktop-empty"><div class="empty-icon muted-icon">${icons.sort}</div><strong>Belum ada pengeluaran</strong><span>Belum ada uang keluar di project ini.</span></div>`
+          }
+        </section>
+      </div>
+
+      <section class="desktop-all-transactions">
+        <div class="desktop-all-head">
+          <h2>Semua Transaksi</h2>
+          <div class="desktop-inline-tools">
+            <div class="search-field desktop-search">${icons.search}<input id="transactionSearch" type="search" autocomplete="off" placeholder="Cari keterangan atau kategori..." value="${esc(state.search)}"></div>
+            <div class="segmented desktop-type-filter">
+              <button class="${state.flowFilter === 'all' ? 'active' : ''}" data-flow-filter="all" type="button">Semua</button>
+              <button class="${state.flowFilter === 'income' ? 'active income' : ''}" data-flow-filter="income" type="button">Masuk</button>
+              <button class="${state.flowFilter === 'expense' ? 'active expense' : ''}" data-flow-filter="expense" type="button">Keluar</button>
+            </div>
+          </div>
+        </div>
+        ${renderDesktopTransactionTable(filtered, false)}
       </section>
+    </div>`;
+}
+
+function renderSpendingList(spending, totalExpense) {
+  if (!spending.length) return `<div class="empty-state compact-empty"><p>Belum ada uang keluar di project ini.</p></div>`;
+  return `<div class="category-spend-list">${spending.map(item => {
+    const pct = totalExpense > 0 ? Math.round((item.amount / totalExpense) * 100) : 0;
+    return `<div class="category-spend"><div><strong>${esc(item.category)}</strong><span>${pct}% dari pengeluaran</span></div><strong>${money(item.amount)}</strong><div class="category-spend-track"><i style="width:${Math.min(pct,100)}%"></i></div></div>`;
+  }).join('')}</div>`;
+}
+
+function renderCompactTransaction(transaction) {
+  const incoming = transaction.type === 'income';
+  return `<button class="compact-transaction" type="button" data-action="transaction-menu" data-id="${transaction.id}">
+    <span class="compact-flow-icon ${incoming ? 'income' : 'expense'}">${incoming ? icons.income : icons.expense}</span>
+    <span><strong>${esc(transaction.description)}</strong><small>${formatDate(transaction.date)} · ${esc(transaction.category || 'Lainnya')}</small></span>
+    <strong class="${incoming ? 'income-text' : 'expense-text'}">${incoming ? '+' : '−'}${money(transaction.amount)}</strong>
+  </button>`;
+}
+
+function filteredProjectTransactions() {
+  const query = state.search.trim().toLocaleLowerCase('id');
+  const from = state.dateFrom || '';
+  const to = state.dateTo || '';
+  let rows = projectTransactions().filter(transaction => {
+    const matchesType = state.flowFilter === 'all' || transaction.type === state.flowFilter;
+    const matchesCategory = state.categoryFilter === 'all' || transaction.category === state.categoryFilter;
+    const haystack = `${transaction.description || ''} ${transaction.category || ''}`.toLocaleLowerCase('id');
+    const matchesSearch = !query || haystack.includes(query);
+    const matchesFrom = !from || transaction.date >= from;
+    const matchesTo = !to || transaction.date <= to;
+    return matchesType && matchesCategory && matchesSearch && matchesFrom && matchesTo;
+  });
+  if (state.sortOrder === 'oldest') rows = [...rows].sort((a,b) => `${a.date}${a.createdAt || ''}`.localeCompare(`${b.date}${b.createdAt || ''}`));
+  return rows;
+}
+
+function renderDesktopTransactionTable(rows, showProjectColumn = false) {
+  if (!rows.length) {
+    return `<div class="desktop-table-shell">
+      <div class="desktop-table-head ${showProjectColumn ? 'with-project' : ''}">
+        <span>Tanggal</span><span>Keterangan</span><span>Kategori</span>${showProjectColumn ? '<span>Project</span>' : ''}<span>Jenis</span><span>Jumlah</span><span>Aksi</span>
+      </div>
+      <div class="desktop-table-empty"><div class="empty-icon muted-icon">${icons.transactions}</div><strong>Belum ada transaksi</strong><span>Transaksi yang kamu buat akan muncul di sini.</span></div>
+    </div>`;
+  }
+  return `<div class="desktop-table-shell">
+    <div class="desktop-table-head ${showProjectColumn ? 'with-project' : ''}">
+      <span>Tanggal</span><span>Keterangan</span><span>Kategori</span>${showProjectColumn ? '<span>Project</span>' : ''}<span>Jenis</span><span>Jumlah</span><span>Aksi</span>
     </div>
+    <div class="desktop-table-body">
+      ${rows.map(transaction => {
+        const incoming = transaction.type === 'income';
+        return `<div class="desktop-table-row ${showProjectColumn ? 'with-project' : ''}">
+          <span>${formatDate(transaction.date)}</span>
+          <strong>${esc(transaction.description)}</strong>
+          <span>${esc(transaction.category || 'Lainnya')}</span>
+          ${showProjectColumn ? `<span>${esc(currentProject()?.name || '—')}</span>` : ''}
+          <span><i class="table-type ${incoming ? 'income' : 'expense'}">${incoming ? 'Masuk' : 'Keluar'}</i></span>
+          <strong class="${incoming ? 'income-text' : 'expense-text'}">${incoming ? '+' : '−'}${money(transaction.amount)}</strong>
+          <button class="menu-button table-menu" type="button" data-action="transaction-menu" data-id="${transaction.id}" aria-label="Aksi transaksi">${icons.more}</button>
+        </div>`;
+      }).join('')}
     </div>
-  `;
+  </div>`;
 }
 
 function renderTransactions() {
+  return state.effectiveLayout === 'desktop' ? renderDesktopTransactions() : renderMobileTransactions();
+}
+
+function renderMobileTransactions() {
   const all = projectTransactions();
-  const query = state.search.trim().toLocaleLowerCase('id');
-  const filtered = all.filter(transaction => {
-    const matchesType = state.flowFilter === 'all' || transaction.type === state.flowFilter;
-    const haystack = `${transaction.description || ''} ${transaction.category || ''}`.toLocaleLowerCase('id');
-    return matchesType && (!query || haystack.includes(query));
-  });
+  const filtered = filteredProjectTransactions();
   const metrics = projectMetrics();
-
   return `
-    <div class="page-head">
-      <div><p class="eyebrow">Keluar masuk duit</p><h1>Transaksi</h1></div>
-    </div>
-
+    <div class="page-head"><div><p class="eyebrow">Keluar masuk duit</p><h1>Transaksi</h1></div></div>
     <div class="transaction-mini-summary">
       <div class="mini-summary income"><span>Masuk</span><strong>${money(metrics.omzet)}</strong></div>
       <div class="mini-summary expense"><span>Keluar</span><strong>${money(metrics.expense)}</strong></div>
       <div class="mini-summary result ${metrics.profitLoss < 0 ? 'loss' : ''}"><span>Selisih</span><strong>${money(metrics.profitLoss)}</strong></div>
     </div>
-
     <div class="toolbar finance-toolbar">
       <div class="search-field">${icons.search}<input id="transactionSearch" type="search" autocomplete="off" placeholder="Cari keterangan atau kategori" value="${esc(state.search)}"></div>
       <div class="segmented finance-filter">
@@ -272,21 +390,65 @@ function renderTransactions() {
         <button class="${state.flowFilter === 'expense' ? 'active expense' : ''}" data-flow-filter="expense" type="button">Keluar</button>
       </div>
     </div>
-
     ${filtered.length
       ? `<div class="card-list finance-transaction-list">${filtered.map(renderTransactionCard).join('')}</div>`
-      : `<div class="empty-state">
-          <div class="empty-icon">${icons.transactions}</div>
-          <h2>${all.length ? 'Transaksi nggak ditemukan' : 'Belum ada transaksi'}</h2>
-          <p>${all.length ? 'Coba kata pencarian atau filter lain.' : 'Catat uang masuk dan uang keluar supaya kondisi keuangan project langsung terlihat.'}</p>
-        </div>`
+      : `<div class="empty-state"><div class="empty-icon">${icons.transactions}</div><h2>${all.length ? 'Transaksi nggak ditemukan' : 'Belum ada transaksi'}</h2><p>${all.length ? 'Coba kata pencarian atau filter lain.' : 'Catat uang masuk dan uang keluar supaya kondisi keuangan project langsung terlihat.'}</p></div>`
     }
-
     <div class="mobile-cash-actions">
       <button class="primary-button income-button" type="button" data-action="new-income">+ Uang Masuk</button>
       <button class="primary-button expense-button" type="button" data-action="new-expense">− Uang Keluar</button>
-    </div>
-  `;
+    </div>`;
+}
+
+function renderDesktopTransactions() {
+  const metrics = projectMetrics();
+  const rows = filteredProjectTransactions();
+  const categories = [...new Set(projectTransactions().map(t => t.category || 'Lainnya'))].sort((a,b)=>a.localeCompare(b,'id'));
+
+  return `
+    <div class="desktop-reference transactions-reference">
+      <div class="desktop-transactions-top">
+        <div class="desktop-page-title"><p>KELUAR MASUK DUIT</p><h1>Transaksi</h1></div>
+        <div class="desktop-search-filters">
+          <div class="search-field desktop-search">${icons.search}<input id="transactionSearch" type="search" autocomplete="off" placeholder="Cari keterangan atau kategori" value="${esc(state.search)}"></div>
+          <select class="desktop-native-like" id="desktopTypeFilter" aria-label="Jenis transaksi">
+            <option value="all" ${state.flowFilter==='all'?'selected':''}>Semua</option>
+            <option value="income" ${state.flowFilter==='income'?'selected':''}>Masuk</option>
+            <option value="expense" ${state.flowFilter==='expense'?'selected':''}>Keluar</option>
+          </select>
+          <label class="desktop-date-input">${icons.calendar}<input type="date" id="dateFrom" value="${esc(state.dateFrom)}"><span>Dari tanggal</span></label>
+          <label class="desktop-date-input">${icons.calendar}<input type="date" id="dateTo" value="${esc(state.dateTo)}"><span>Sampai tanggal</span></label>
+        </div>
+      </div>
+
+      <div class="desktop-metrics-row">
+        <article class="desktop-metric income"><span>MASUK</span><strong>${money(metrics.omzet)}</strong></article>
+        <article class="desktop-metric expense"><span>KELUAR</span><strong>${money(metrics.expense)}</strong></article>
+        <article class="desktop-metric"><span>SELISIH</span><strong>${money(metrics.profitLoss)}</strong></article>
+      </div>
+
+      <div class="desktop-transaction-controls">
+        <div class="segmented desktop-three-filter">
+          <button class="${state.flowFilter==='all'?'active':''}" data-flow-filter="all" type="button">Semua</button>
+          <button class="${state.flowFilter==='income'?'active income':''}" data-flow-filter="income" type="button">Masuk</button>
+          <button class="${state.flowFilter==='expense'?'active expense':''}" data-flow-filter="expense" type="button">Keluar</button>
+        </div>
+        <select class="desktop-filter-select" id="categoryFilter">
+          <option value="all">Semua Kategori</option>
+          ${categories.map(category=>`<option value="${esc(category)}" ${state.categoryFilter===category?'selected':''}>${esc(category)}</option>`).join('')}
+        </select>
+        <select class="desktop-filter-select" id="sortOrder">
+          <option value="newest" ${state.sortOrder==='newest'?'selected':''}>Terbaru</option>
+          <option value="oldest" ${state.sortOrder==='oldest'?'selected':''}>Terlama</option>
+        </select>
+        <div class="desktop-action-buttons">
+          <button class="desktop-income-button" type="button" data-action="new-income">＋ Uang Masuk</button>
+          <button class="desktop-expense-button" type="button" data-action="new-expense">− Uang Keluar</button>
+        </div>
+      </div>
+
+      ${renderDesktopTransactionTable(rows, false)}
+    </div>`;
 }
 
 function renderTransactionCard(transaction) {
@@ -386,7 +548,7 @@ function renderSettings() {
         <button class="secondary-button" style="margin-top:12px" data-action="edit-project" type="button">Ubah project</button>
       </section>` : ''}
 
-    <p class="caption app-version">ANGGARAN v0.7.3 · Keuangan Project · Offline-first</p>
+    <p class="caption app-version">ANGGARAN v0.8 · Keuangan Project · Offline-first</p>
   `;
 }
 
@@ -413,6 +575,32 @@ function bindViewEvents() {
     render();
     window.scrollTo({ top: 0, behavior: 'auto' });
   }));
+
+  const desktopTypeFilter = document.getElementById('desktopTypeFilter');
+  if (desktopTypeFilter) desktopTypeFilter.addEventListener('change', () => {
+    state.flowFilter = desktopTypeFilter.value;
+    render();
+  });
+  const categoryFilter = document.getElementById('categoryFilter');
+  if (categoryFilter) categoryFilter.addEventListener('change', () => {
+    state.categoryFilter = categoryFilter.value;
+    render();
+  });
+  const sortOrder = document.getElementById('sortOrder');
+  if (sortOrder) sortOrder.addEventListener('change', () => {
+    state.sortOrder = sortOrder.value;
+    render();
+  });
+  const dateFrom = document.getElementById('dateFrom');
+  if (dateFrom) dateFrom.addEventListener('change', () => {
+    state.dateFrom = dateFrom.value;
+    render();
+  });
+  const dateTo = document.getElementById('dateTo');
+  if (dateTo) dateTo.addEventListener('change', () => {
+    state.dateTo = dateTo.value;
+    render();
+  });
 
   const search = document.getElementById('transactionSearch');
   if (search) {
@@ -1144,7 +1332,7 @@ async function createBackupFile() {
     const data = await exportDataSnapshot();
     const payload = {
       app: 'ANGGARAN',
-      version: '0.7.3',
+      version: '0.8',
       schemaVersion: BACKUP_SCHEMA_VERSION,
       exportedAt: new Date().toISOString(),
       data
@@ -1257,6 +1445,7 @@ function bindGlobalEvents() {
   window.addEventListener('resize', syncVisualViewport);
 
   els.projectSwitcher.addEventListener('click', openProjectChooser);
+  els.settingsButton?.addEventListener('click', () => navigate('settings'));
 
   const mqTablet = window.matchMedia('(min-width: 700px)');
   const updateAuto = () => {
