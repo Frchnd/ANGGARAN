@@ -256,7 +256,6 @@ function renderTransactions() {
   return `
     <div class="page-head">
       <div><p class="eyebrow">Keluar masuk duit</p><h1>Transaksi</h1></div>
-      <button class="icon-button desktop-only" type="button" data-action="transaction-chooser" aria-label="Tambah transaksi">${icons.plus}</button>
     </div>
 
     <div class="transaction-mini-summary">
@@ -283,11 +282,10 @@ function renderTransactions() {
         </div>`
     }
 
-    ${state.effectiveLayout === 'mobile' ? `
-      <div class="mobile-cash-actions">
-        <button class="primary-button income-button" type="button" data-action="new-income">+ Uang Masuk</button>
-        <button class="primary-button expense-button" type="button" data-action="new-expense">− Uang Keluar</button>
-      </div>` : ''}
+    <div class="mobile-cash-actions">
+      <button class="primary-button income-button" type="button" data-action="new-income">+ Uang Masuk</button>
+      <button class="primary-button expense-button" type="button" data-action="new-expense">− Uang Keluar</button>
+    </div>
   `;
 }
 
