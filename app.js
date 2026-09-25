@@ -22,7 +22,6 @@ const els = {
   desktopNav: document.getElementById('desktopNav'),
   projectSwitcher: document.getElementById('projectSwitcher'),
   projectNameHeader: document.getElementById('projectNameHeader'),
-  quickAddButton: document.getElementById('quickAddButton'),
   overlayRoot: document.getElementById('overlayRoot'),
   toastRoot: document.getElementById('toastRoot')
 };
@@ -129,8 +128,6 @@ function renderNav() {
 
 function renderHeader() {
   els.projectNameHeader.textContent = currentProject()?.name || 'Belum ada proyek';
-  els.quickAddButton.style.visibility = currentProject() ? 'visible' : 'hidden';
-  els.quickAddButton.setAttribute('aria-label', 'Catat uang masuk atau keluar');
 }
 
 function render() {
@@ -393,7 +390,7 @@ function renderSettings() {
         <button class="secondary-button" style="margin-top:12px" data-action="edit-project" type="button">Ubah project</button>
       </section>` : ''}
 
-    <p class="caption app-version">ANGGARAN v0.7.1 · Keuangan Project · Offline-first</p>
+    <p class="caption app-version">ANGGARAN v0.7.2 · Keuangan Project · Offline-first</p>
   `;
 }
 
@@ -1151,7 +1148,7 @@ async function createBackupFile() {
     const data = await exportDataSnapshot();
     const payload = {
       app: 'ANGGARAN',
-      version: '0.7.1',
+      version: '0.7.2',
       schemaVersion: BACKUP_SCHEMA_VERSION,
       exportedAt: new Date().toISOString(),
       data
@@ -1236,6 +1233,17 @@ function bindGlobalEvents() {
 
   document.addEventListener('keydown', onEsc);
 
+  document.addEventListener('gesturestart', event => event.preventDefault(), { passive: false });
+  document.addEventListener('gesturechange', event => event.preventDefault(), { passive: false });
+  document.addEventListener('wheel', event => {
+    if (event.ctrlKey) event.preventDefault();
+  }, { passive: false });
+  document.addEventListener('keydown', event => {
+    if ((event.ctrlKey || event.metaKey) && ['+', '=', '-', '0'].includes(event.key)) {
+      event.preventDefault();
+    }
+  });
+
   window.addEventListener('popstate', event => {
     const depth = Number(event.state?.anggaranOverlayDepth) || 0;
     if (depth < 2) closeSubOverlay({ fromHistory: true });
@@ -1253,7 +1261,6 @@ function bindGlobalEvents() {
   window.addEventListener('resize', syncVisualViewport);
 
   els.projectSwitcher.addEventListener('click', openProjectChooser);
-  els.quickAddButton.addEventListener('click', openTransactionChooser);
 
   const mqWide = window.matchMedia('(min-width: 900px)');
   const mqPointer = window.matchMedia('(pointer: fine)');
