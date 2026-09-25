@@ -597,7 +597,7 @@ function renderSettings() {
         <button class="secondary-button" style="margin-top:12px" data-action="edit-project" type="button">Ubah project</button>
       </section>` : ''}
 
-    <p class="caption app-version">ANGGARAN v0.8 · Keuangan Project · Offline-first</p>
+    <p class="caption app-version">ANGGARAN v0.8.1 · Keuangan Project · Offline-first</p>
   `;
 }
 
@@ -1391,7 +1391,7 @@ async function createBackupFile() {
     const data = await exportDataSnapshot();
     const payload = {
       app: 'ANGGARAN',
-      version: '0.8',
+      version: '0.8.1',
       schemaVersion: BACKUP_SCHEMA_VERSION,
       exportedAt: new Date().toISOString(),
       data
