@@ -1,7 +1,7 @@
 {
   "name": "ANGGARAN",
   "short_name": "ANGGARAN",
-  "description": "RAB dan realisasi proyek konstruksi yang cepat, lokal, dan offline.",
+  "description": "Pencatatan keuangan per project: omzet, uang masuk, uang keluar, dan untung/rugi.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
