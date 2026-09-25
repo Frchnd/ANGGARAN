@@ -1978,3 +1978,59 @@ button:focus-visible,
 .finance-filter,
 .transaction-type-control { width: 100%; }
 .desktop-reference { width: 100%; }
+
+
+/* tablet safety: keep PC semantics without overflow */
+@media (min-width: 700px) and (max-width: 899px) {
+  .app-shell[data-layout="desktop"] .desktop-transactions-top {
+    grid-template-columns: 190px minmax(0,1fr);
+    gap: 10px;
+  }
+  .app-shell[data-layout="desktop"] .desktop-search-filters {
+    grid-template-columns: minmax(180px,1fr) 96px 138px;
+    gap: 5px;
+  }
+  .app-shell[data-layout="desktop"] .desktop-transaction-controls {
+    grid-template-columns: minmax(210px,1.2fr) minmax(140px,.8fr) minmax(110px,.65fr);
+    grid-template-rows: 40px 40px;
+    gap: 5px;
+  }
+  .app-shell[data-layout="desktop"] .desktop-action-buttons {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: end;
+    grid-template-columns: repeat(2,118px);
+  }
+  .app-shell[data-layout="desktop"] .desktop-three-filter,
+  .app-shell[data-layout="desktop"] .desktop-three-filter button,
+  .app-shell[data-layout="desktop"] .desktop-dropdown-trigger,
+  .app-shell[data-layout="desktop"] .desktop-income-button,
+  .app-shell[data-layout="desktop"] .desktop-expense-button {
+    height: 40px;
+    min-height: 40px;
+  }
+  .app-shell[data-layout="desktop"] .transactions-reference {
+    grid-template-rows: 96px 60px 85px minmax(135px,1fr);
+  }
+
+  .app-shell[data-layout="desktop"] .desktop-table-head,
+  .app-shell[data-layout="desktop"] .desktop-table-row {
+    grid-template-columns: 82px minmax(125px,1.25fr) 72px 60px 88px 34px;
+    gap: 5px;
+    padding-inline: 7px;
+  }
+  .app-shell[data-layout="desktop"] .desktop-table-head.with-balance,
+  .app-shell[data-layout="desktop"] .desktop-table-row.with-balance {
+    grid-template-columns: 78px minmax(118px,1.2fr) 66px 58px 82px 82px 32px;
+    gap: 4px;
+    padding-inline: 6px;
+  }
+  .app-shell[data-layout="desktop"] .desktop-table-head.with-project,
+  .app-shell[data-layout="desktop"] .desktop-table-row.with-project {
+    grid-template-columns: 76px minmax(112px,1.18fr) 62px 70px 56px 80px 32px;
+    gap: 4px;
+    padding-inline: 6px;
+  }
+  .app-shell[data-layout="desktop"] .desktop-table-head { font-size: 7px; }
+  .app-shell[data-layout="desktop"] .desktop-table-row { font-size: 7px; }
+}
