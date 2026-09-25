@@ -1,4 +1,4 @@
-# ANGGARAN v0.7.3
+# ANGGARAN v0.8.1
 
 ANGGARAN sekarang difokuskan sebagai aplikasi pencatatan keuangan per project.
 
@@ -106,3 +106,15 @@ v0.7 mengubah total fokus aplikasi dari RAB/realisasi barang menjadi pencatatan 
 - Perbedaan Mobile vs PC/Tablet hanya pada Ringkasan: Mobile boleh scroll, PC/Tablet dipadatkan dalam satu viewport.
 - Tab Transaksi, Proyek, dan Pengaturan mempertahankan komposisi single-column yang sama di semua layout.
 - Mode Otomatis: viewport >=700px dianggap PC/Tablet; viewport <700px dianggap Mobile. Pointer/mouse tidak lagi dipakai untuk menentukan layout.
+
+
+## v0.8.1 UI reference cleanup
+- Stylesheet lama yang bertumpuk dihapus dan diganti satu sistem CSS bersih.
+- Desktop/Tablet mengikuti referensi final Ringkasan dan Transaksi.
+- Bottom navigation hanya Ringkasan / Transaksi / Proyek, fixed-width, centered, dan tidak stretch.
+- Pengaturan dipindah ke tombol gear di header.
+- Header desktop berisi brand ANGGARAN, project aktif, dan Pengaturan dengan alignment konsisten.
+- Panel kosong diberi tinggi terkontrol supaya tidak membengkak memenuhi ruang.
+- Ringkasan desktop tetap muat satu viewport; tabel mengambil sisa ruang secara proporsional.
+- Mobile tetap memakai komposisi satu kolom yang rapi dengan bottom navigation 3 tab.
+- Auto layout: viewport >=700px menggunakan layout PC/Tablet.
