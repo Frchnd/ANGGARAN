@@ -319,6 +319,10 @@ function renderDesktopDashboard() {
               <button class="${state.flowFilter === 'income' ? 'active income' : ''}" data-flow-filter="income" type="button">Masuk</button>
               <button class="${state.flowFilter === 'expense' ? 'active expense' : ''}" data-flow-filter="expense" type="button">Keluar</button>
             </div>
+            ${desktopDropdown('category', state.categoryFilter === 'all' ? 'Filter' : state.categoryFilter, [
+              {value:'all',label:'Semua Kategori',active:state.categoryFilter==='all'},
+              ...[...new Set(transactions.map(t => t.category || 'Lainnya'))].sort((a,b)=>a.localeCompare(b,'id')).map(category => ({value:category,label:category,active:state.categoryFilter===category}))
+            ])}
           </div>
         </div>
         ${renderDesktopTransactionTable(filtered, { showBalance: true })}
@@ -592,6 +596,7 @@ function renderSettings() {
 
 function bindViewEvents() {
   els.view.querySelectorAll('[data-action]').forEach(button => button.addEventListener('click', handleAction));
+  bindPickerButtons(els.view);
   els.view.querySelectorAll('[data-nav]').forEach(button => button.addEventListener('click', () => navigate(button.dataset.nav)));
 
   els.view.querySelectorAll('[data-flow-filter]').forEach(button => button.addEventListener('click', () => {
