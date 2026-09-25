@@ -44,7 +44,7 @@ const icons = {
 };
 
 const navItems = [
-  ['dashboard', 'Ringkas', icons.dashboard],
+  ['dashboard', 'Ringkasan', icons.dashboard],
   ['transactions', 'Transaksi', icons.transactions],
   ['projects', 'Proyek', icons.projects],
   ['settings', 'Pengaturan', icons.settings]
@@ -167,12 +167,15 @@ function renderNoProject() {
 function renderDashboard() {
   const metrics = projectMetrics();
   const transactions = projectTransactions();
-  const recent = transactions.slice(0, 5);
-  const spending = categoryTotals(transactions, 'expense').slice(0, 5);
+  const recentLimit = state.effectiveLayout === 'desktop' ? 4 : 5;
+  const spendingLimit = state.effectiveLayout === 'desktop' ? 3 : 5;
+  const recent = transactions.slice(0, recentLimit);
+  const spending = categoryTotals(transactions, 'expense').slice(0, spendingLimit);
   const resultClass = metrics.profitLoss > 0 ? 'profit' : metrics.profitLoss < 0 ? 'loss' : 'neutral';
   const resultLabel = metrics.profitLoss > 0 ? 'UNTUNG SEMENTARA' : metrics.profitLoss < 0 ? 'RUGI SEMENTARA' : 'UNTUNG / RUGI';
 
   return `
+    <div class="dashboard-screen">
     <div class="page-head finance-page-head">
       <div>
         <p class="eyebrow">Keuangan project</p>
@@ -240,6 +243,7 @@ function renderDashboard() {
           : `<div class="empty-state compact-empty"><p>Belum ada uang keluar di project ini.</p></div>`
         }
       </section>
+    </div>
     </div>
   `;
 }
@@ -320,7 +324,6 @@ function renderProjects() {
   return `
     <div class="page-head">
       <div><p class="eyebrow">Semua project</p><h1>Proyek</h1></div>
-      <button class="icon-button desktop-only" type="button" data-action="new-project" aria-label="Tambah project">${icons.plus}</button>
     </div>
 
     ${state.projects.length
@@ -353,9 +356,9 @@ function renderProjects() {
         </div>`
     }
 
-    ${state.effectiveLayout === 'mobile'
-      ? '<div class="page-bottom-action"><button class="primary-button accent" data-action="new-project" type="button">+ Project baru</button></div>'
-      : ''}
+    <div class="page-bottom-action project-new-action">
+      <button class="primary-button accent" data-action="new-project" type="button">+ Project baru</button>
+    </div>
   `;
 }
 
@@ -390,7 +393,7 @@ function renderSettings() {
         <button class="secondary-button" style="margin-top:12px" data-action="edit-project" type="button">Ubah project</button>
       </section>` : ''}
 
-    <p class="caption app-version">ANGGARAN v0.7 · Keuangan Project · Offline-first</p>
+    <p class="caption app-version">ANGGARAN v0.7.1 · Keuangan Project · Offline-first</p>
   `;
 }
 
@@ -1148,7 +1151,7 @@ async function createBackupFile() {
     const data = await exportDataSnapshot();
     const payload = {
       app: 'ANGGARAN',
-      version: '0.7',
+      version: '0.7.1',
       schemaVersion: BACKUP_SCHEMA_VERSION,
       exportedAt: new Date().toISOString(),
       data
