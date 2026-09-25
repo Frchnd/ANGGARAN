@@ -131,6 +131,7 @@ function renderNav() {
 
 function renderHeader() {
   els.projectNameHeader.textContent = currentProject()?.name || 'Belum ada proyek';
+  els.settingsButton?.classList.toggle('active', state.view === 'settings');
 }
 
 function render() {
@@ -163,6 +164,28 @@ function renderNoProject() {
       <p>Buat project dulu. Setelah itu catat setiap uang masuk dan uang keluar. Omzet dan untung/rugi dihitung otomatis.</p>
       <button class="primary-button accent" type="button" data-action="new-project">Buat project</button>
     </div>`;
+}
+
+function desktopDropdown(kind, label, options) {
+  return `<div class="desktop-dropdown" data-desktop-dropdown="${kind}">
+    <button class="desktop-dropdown-trigger" type="button" data-dropdown-toggle="${kind}">
+      <span>${esc(label)}</span>${icons.chevron}
+    </button>
+    <div class="desktop-dropdown-menu" data-dropdown-menu="${kind}" hidden>
+      ${options.map(option => `<button type="button" class="${option.active ? 'active' : ''}" data-desktop-filter-kind="${kind}" data-desktop-filter-value="${esc(option.value)}">${esc(option.label)}</button>`).join('')}
+    </div>
+  </div>`;
+}
+
+function runningBalances(rows) {
+  const chronological = [...projectTransactions()].sort((a,b) => `${a.date}${a.createdAt || ''}`.localeCompare(`${b.date}${b.createdAt || ''}`));
+  let balance = 0;
+  const map = new Map();
+  for (const transaction of chronological) {
+    balance += transaction.type === 'income' ? Number(transaction.amount || 0) : -Number(transaction.amount || 0);
+    map.set(transaction.id, balance);
+  }
+  return map;
 }
 
 function renderDashboard() {
@@ -298,7 +321,7 @@ function renderDesktopDashboard() {
             </div>
           </div>
         </div>
-        ${renderDesktopTransactionTable(filtered, false)}
+        ${renderDesktopTransactionTable(filtered, { showBalance: true })}
       </section>
     </div>`;
 }
@@ -337,29 +360,36 @@ function filteredProjectTransactions() {
   return rows;
 }
 
-function renderDesktopTransactionTable(rows, showProjectColumn = false) {
+function renderDesktopTransactionTable(rows, options = {}) {
+  const showProjectColumn = Boolean(options.showProjectColumn);
+  const showBalance = Boolean(options.showBalance);
+  const balances = showBalance ? runningBalances(rows) : new Map();
+  const colsClass = [showProjectColumn ? 'with-project' : '', showBalance ? 'with-balance' : ''].filter(Boolean).join(' ');
+
   if (!rows.length) {
     return `<div class="desktop-table-shell">
-      <div class="desktop-table-head ${showProjectColumn ? 'with-project' : ''}">
-        <span>Tanggal</span><span>Keterangan</span><span>Kategori</span>${showProjectColumn ? '<span>Project</span>' : ''}<span>Jenis</span><span>Jumlah</span><span>Aksi</span>
+      <div class="desktop-table-head ${colsClass}">
+        <span>Tanggal</span><span>Keterangan</span><span>Kategori</span>${showProjectColumn ? '<span>Project</span>' : ''}<span>Jenis</span><span>Jumlah</span>${showBalance ? '<span>Saldo</span>' : ''}<span>Aksi</span>
       </div>
       <div class="desktop-table-empty"><div class="empty-icon muted-icon">${icons.transactions}</div><strong>Belum ada transaksi</strong><span>Transaksi yang kamu buat akan muncul di sini.</span></div>
     </div>`;
   }
+
   return `<div class="desktop-table-shell">
-    <div class="desktop-table-head ${showProjectColumn ? 'with-project' : ''}">
-      <span>Tanggal</span><span>Keterangan</span><span>Kategori</span>${showProjectColumn ? '<span>Project</span>' : ''}<span>Jenis</span><span>Jumlah</span><span>Aksi</span>
+    <div class="desktop-table-head ${colsClass}">
+      <span>Tanggal</span><span>Keterangan</span><span>Kategori</span>${showProjectColumn ? '<span>Project</span>' : ''}<span>Jenis</span><span>Jumlah</span>${showBalance ? '<span>Saldo</span>' : ''}<span>Aksi</span>
     </div>
     <div class="desktop-table-body">
       ${rows.map(transaction => {
         const incoming = transaction.type === 'income';
-        return `<div class="desktop-table-row ${showProjectColumn ? 'with-project' : ''}">
+        return `<div class="desktop-table-row ${colsClass}">
           <span>${formatDate(transaction.date)}</span>
           <strong>${esc(transaction.description)}</strong>
           <span>${esc(transaction.category || 'Lainnya')}</span>
           ${showProjectColumn ? `<span>${esc(currentProject()?.name || '—')}</span>` : ''}
           <span><i class="table-type ${incoming ? 'income' : 'expense'}">${incoming ? 'Masuk' : 'Keluar'}</i></span>
           <strong class="${incoming ? 'income-text' : 'expense-text'}">${incoming ? '+' : '−'}${money(transaction.amount)}</strong>
+          ${showBalance ? `<strong>${money(balances.get(transaction.id) || 0)}</strong>` : ''}
           <button class="menu-button table-menu" type="button" data-action="transaction-menu" data-id="${transaction.id}" aria-label="Aksi transaksi">${icons.more}</button>
         </div>`;
       }).join('')}
@@ -405,19 +435,27 @@ function renderDesktopTransactions() {
   const rows = filteredProjectTransactions();
   const categories = [...new Set(projectTransactions().map(t => t.category || 'Lainnya'))].sort((a,b)=>a.localeCompare(b,'id'));
 
+  const typeLabel = state.flowFilter === 'income' ? 'Masuk' : state.flowFilter === 'expense' ? 'Keluar' : 'Semua';
+  const categoryLabel = state.categoryFilter === 'all' ? 'Semua Kategori' : state.categoryFilter;
+  const sortLabel = state.sortOrder === 'oldest' ? 'Terlama' : 'Terbaru';
+
   return `
     <div class="desktop-reference transactions-reference">
       <div class="desktop-transactions-top">
         <div class="desktop-page-title"><p>KELUAR MASUK DUIT</p><h1>Transaksi</h1></div>
         <div class="desktop-search-filters">
           <div class="search-field desktop-search">${icons.search}<input id="transactionSearch" type="search" autocomplete="off" placeholder="Cari keterangan atau kategori" value="${esc(state.search)}"></div>
-          <select class="desktop-native-like" id="desktopTypeFilter" aria-label="Jenis transaksi">
-            <option value="all" ${state.flowFilter==='all'?'selected':''}>Semua</option>
-            <option value="income" ${state.flowFilter==='income'?'selected':''}>Masuk</option>
-            <option value="expense" ${state.flowFilter==='expense'?'selected':''}>Keluar</option>
-          </select>
-          <label class="desktop-date-input">${icons.calendar}<input type="date" id="dateFrom" value="${esc(state.dateFrom)}"><span>Dari tanggal</span></label>
-          <label class="desktop-date-input">${icons.calendar}<input type="date" id="dateTo" value="${esc(state.dateTo)}"><span>Sampai tanggal</span></label>
+          ${desktopDropdown('type', typeLabel, [
+            {value:'all',label:'Semua',active:state.flowFilter==='all'},
+            {value:'income',label:'Masuk',active:state.flowFilter==='income'},
+            {value:'expense',label:'Keluar',active:state.flowFilter==='expense'}
+          ])}
+          <div class="desktop-date-stack">
+            <input type="hidden" id="dateFrom" value="${esc(state.dateFrom)}">
+            <button class="desktop-date-button" type="button" data-date-picker data-target="dateFrom">${icons.calendar}<span data-picker-value>${state.dateFrom ? formatDate(state.dateFrom) : 'Dari tanggal'}</span></button>
+            <input type="hidden" id="dateTo" value="${esc(state.dateTo)}">
+            <button class="desktop-date-button" type="button" data-date-picker data-target="dateTo">${icons.calendar}<span data-picker-value>${state.dateTo ? formatDate(state.dateTo) : 'Sampai tanggal'}</span></button>
+          </div>
         </div>
       </div>
 
@@ -433,21 +471,21 @@ function renderDesktopTransactions() {
           <button class="${state.flowFilter==='income'?'active income':''}" data-flow-filter="income" type="button">Masuk</button>
           <button class="${state.flowFilter==='expense'?'active expense':''}" data-flow-filter="expense" type="button">Keluar</button>
         </div>
-        <select class="desktop-filter-select" id="categoryFilter">
-          <option value="all">Semua Kategori</option>
-          ${categories.map(category=>`<option value="${esc(category)}" ${state.categoryFilter===category?'selected':''}>${esc(category)}</option>`).join('')}
-        </select>
-        <select class="desktop-filter-select" id="sortOrder">
-          <option value="newest" ${state.sortOrder==='newest'?'selected':''}>Terbaru</option>
-          <option value="oldest" ${state.sortOrder==='oldest'?'selected':''}>Terlama</option>
-        </select>
+        ${desktopDropdown('category', categoryLabel, [
+          {value:'all',label:'Semua Kategori',active:state.categoryFilter==='all'},
+          ...categories.map(category => ({value:category,label:category,active:state.categoryFilter===category}))
+        ])}
+        ${desktopDropdown('sort', sortLabel, [
+          {value:'newest',label:'Terbaru',active:state.sortOrder==='newest'},
+          {value:'oldest',label:'Terlama',active:state.sortOrder==='oldest'}
+        ])}
         <div class="desktop-action-buttons">
           <button class="desktop-income-button" type="button" data-action="new-income">＋ Uang Masuk</button>
           <button class="desktop-expense-button" type="button" data-action="new-expense">− Uang Keluar</button>
         </div>
       </div>
 
-      ${renderDesktopTransactionTable(rows, false)}
+      ${renderDesktopTransactionTable(rows)}
     </div>`;
 }
 
@@ -576,21 +614,25 @@ function bindViewEvents() {
     window.scrollTo({ top: 0, behavior: 'auto' });
   }));
 
-  const desktopTypeFilter = document.getElementById('desktopTypeFilter');
-  if (desktopTypeFilter) desktopTypeFilter.addEventListener('change', () => {
-    state.flowFilter = desktopTypeFilter.value;
+  els.view.querySelectorAll('[data-dropdown-toggle]').forEach(button => button.addEventListener('click', event => {
+    event.stopPropagation();
+    const kind = button.dataset.dropdownToggle;
+    const menu = els.view.querySelector(`[data-dropdown-menu="${kind}"]`);
+    els.view.querySelectorAll('[data-dropdown-menu]').forEach(other => {
+      if (other !== menu) other.hidden = true;
+    });
+    if (menu) menu.hidden = !menu.hidden;
+  }));
+
+  els.view.querySelectorAll('[data-desktop-filter-kind]').forEach(button => button.addEventListener('click', () => {
+    const kind = button.dataset.desktopFilterKind;
+    const value = button.dataset.desktopFilterValue;
+    if (kind === 'type') state.flowFilter = value;
+    if (kind === 'category') state.categoryFilter = value;
+    if (kind === 'sort') state.sortOrder = value;
     render();
-  });
-  const categoryFilter = document.getElementById('categoryFilter');
-  if (categoryFilter) categoryFilter.addEventListener('change', () => {
-    state.categoryFilter = categoryFilter.value;
-    render();
-  });
-  const sortOrder = document.getElementById('sortOrder');
-  if (sortOrder) sortOrder.addEventListener('change', () => {
-    state.sortOrder = sortOrder.value;
-    render();
-  });
+  }));
+
   const dateFrom = document.getElementById('dateFrom');
   if (dateFrom) dateFrom.addEventListener('change', () => {
     state.dateFrom = dateFrom.value;
@@ -1413,6 +1455,9 @@ function bindGlobalEvents() {
   document.addEventListener('click', event => {
     const nav = event.target.closest('[data-nav]');
     if (nav && !els.view.contains(nav)) navigate(nav.dataset.nav);
+    if (!event.target.closest('[data-desktop-dropdown]')) {
+      els.view.querySelectorAll('[data-dropdown-menu]').forEach(menu => { menu.hidden = true; });
+    }
   });
 
   document.addEventListener('keydown', onEsc);
