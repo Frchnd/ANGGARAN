@@ -1,4 +1,4 @@
-# ANGGARAN v0.7.2
+# ANGGARAN v0.7.3
 
 ANGGARAN sekarang difokuskan sebagai aplikasi pencatatan keuangan per project.
 
@@ -98,3 +98,11 @@ v0.7 mengubah total fokus aplikasi dari RAB/realisasi barang menjadi pencatatan 
 - Zoom pinch, Ctrl/Cmd +/-, dan gesture zoom dinonaktifkan.
 - Tombol + di header atas dihapus sepenuhnya.
 - Tambah project tetap hanya melalui tombol + Project baru pada tab Proyek.
+
+
+## v0.7.3 layout correction
+- Navigasi Ringkasan / Transaksi / Proyek / Pengaturan selalu berada di bottom navigation pada HP, tablet, dan PC.
+- Sidebar desktop dihapus.
+- Perbedaan Mobile vs PC/Tablet hanya pada Ringkasan: Mobile boleh scroll, PC/Tablet dipadatkan dalam satu viewport.
+- Tab Transaksi, Proyek, dan Pengaturan mempertahankan komposisi single-column yang sama di semua layout.
+- Mode Otomatis: viewport >=700px dianggap PC/Tablet; viewport <700px dianggap Mobile. Pointer/mouse tidak lagi dipakai untuk menentukan layout.
