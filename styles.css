@@ -1963,3 +1963,18 @@ button:focus-visible,
     scroll-behavior: auto !important;
   }
 }
+
+
+/* explicit structural wrappers after stylesheet reset */
+.dashboard-columns,
+.finance-columns,
+.finance-page-head,
+.finance-filter,
+.transaction-type-control,
+.desktop-reference {
+  min-width: 0;
+}
+.finance-page-head { margin-bottom: 18px; }
+.finance-filter,
+.transaction-type-control { width: 100%; }
+.desktop-reference { width: 100%; }
