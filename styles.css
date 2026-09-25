@@ -3309,3 +3309,22 @@ body,
     grid-template-columns: repeat(3,minmax(0,1fr));
   }
 }
+
+
+/* v0.8 dashboard all-transactions toolbar: search + type + filter */
+.app-shell[data-layout="desktop"] .dashboard-reference .desktop-inline-tools {
+  grid-template-columns: minmax(240px,1fr) 330px 150px;
+}
+.app-shell[data-layout="desktop"] .dashboard-reference .desktop-inline-tools > .desktop-dropdown .desktop-dropdown-trigger {
+  height: 44px;
+  border-radius: 12px;
+}
+.app-shell[data-layout="desktop"] .dashboard-reference .desktop-inline-tools > .desktop-dropdown .desktop-dropdown-menu {
+  left: auto;
+  width: 210px;
+}
+@media (min-width: 700px) and (max-width: 1050px) {
+  .app-shell[data-layout="desktop"] .dashboard-reference .desktop-inline-tools {
+    grid-template-columns: minmax(200px,1fr) 260px 130px;
+  }
+}
