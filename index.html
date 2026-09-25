@@ -18,10 +18,20 @@
   <div id="app" class="app-shell" data-layout="mobile">
     <main class="main-shell">
       <header class="topbar">
+        <div class="header-brand" aria-label="ANGGARAN">
+          <span class="header-brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M5 19 12 5l7 14M8.6 13h6.8"/></svg>
+          </span>
+          <strong>ANGGARAN</strong>
+        </div>
+        <span class="header-divider" aria-hidden="true"></span>
         <button class="project-switcher" id="projectSwitcher" type="button" aria-label="Pilih proyek">
           <span class="project-switcher-label">PROYEK</span>
           <span class="project-switcher-value" id="projectNameHeader">Belum ada proyek</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
+        </button>
+        <button class="header-settings" id="settingsButton" type="button" aria-label="Pengaturan">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.5-2-3.5-2.5 1a7 7 0 0 0-2-1.2L14 3h-4l-.4 2.6a7 7 0 0 0-2 1.2l-2.5-1-2 3.5 2 1.5A7 7 0 0 0 5 12c0 .4 0 .8.1 1.2l-2 1.5 2 3.5 2.5-1a7 7 0 0 0 2 1.2L10 21h4l.4-2.6a7 7 0 0 0 2-1.2l2.5 1 2-3.5-2-1.5c.1-.4.1-.8.1-1.2Z"/></svg>
         </button>
       </header>
 
