@@ -1726,3 +1726,331 @@ button:focus-visible,
     scroll-behavior: auto !important;
   }
 }
+
+
+/* v0.7.1 — unified theme + fixed desktop/tablet canvas */
+:root {
+  --canvas-max: 1000px;
+  --panel-radius: 17px;
+}
+
+/* One visual language across all surfaces */
+.finance-kpi,
+.cash-action,
+.finance-transaction-card,
+.project-finance-card,
+.setting-card,
+.category-spend,
+.mini-summary,
+.option-row,
+.project-row,
+.empty-state,
+.picker-button,
+.input,
+.textarea,
+.search-field input {
+  border-radius: var(--panel-radius);
+}
+
+.finance-kpi,
+.finance-transaction-card,
+.project-finance-card,
+.setting-card,
+.category-spend,
+.mini-summary,
+.option-row,
+.project-row {
+  background: var(--surface-raised);
+  border-color: var(--line-soft);
+  box-shadow: var(--shadow-sm);
+}
+
+.primary-button,
+.secondary-button,
+.danger-button,
+.icon-button,
+.menu-button,
+.project-menu-button,
+.sheet-close {
+  border-radius: 14px;
+}
+
+.brand-mark {
+  transform: none;
+  line-height: 0;
+}
+.brand-mark svg {
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  stroke-width: 2.25;
+}
+
+/* Project creation has one clear entry point */
+.project-new-action {
+  margin-top: 16px;
+}
+
+/* Desktop / tablet PC mode: centered canvas, never stretched edge-to-edge */
+.app-shell[data-layout="desktop"] {
+  grid-template-columns: 228px minmax(0,1fr);
+}
+
+.app-shell[data-layout="desktop"] .main-shell {
+  min-width: 0;
+  width: 100%;
+  background:
+    radial-gradient(circle at 92% 0%, rgba(242,177,52,.055), transparent 24rem),
+    var(--bg);
+}
+
+.app-shell[data-layout="desktop"] .topbar {
+  width: min(calc(100% - 40px), var(--canvas-max));
+  margin: 0 auto;
+  padding: calc(12px + var(--safe-top)) 4px 11px;
+  background: transparent;
+  backdrop-filter: none;
+  border-bottom: 1px solid rgba(216,211,200,.72);
+  box-shadow: none;
+}
+
+.app-shell[data-layout="desktop"] .view {
+  width: min(calc(100% - 40px), var(--canvas-max));
+  max-width: var(--canvas-max);
+  margin: 0 auto;
+  padding: 18px 0 30px;
+}
+
+.app-shell[data-layout="desktop"] .sidebar {
+  padding: 22px 14px;
+}
+
+.app-shell[data-layout="desktop"] .brand-block {
+  padding: 0 7px 20px;
+}
+
+.app-shell[data-layout="desktop"] .project-new-action {
+  position: static;
+  width: 220px;
+  margin: 16px 0 0 auto;
+  padding: 0;
+  background: none;
+}
+
+/* Ringkasan desktop fits as a compact single-screen dashboard on normal laptop/desktop heights. */
+.app-shell[data-layout="desktop"] .dashboard-screen {
+  display: grid;
+  grid-template-columns: minmax(0,1.25fr) minmax(300px,.75fr);
+  grid-template-areas:
+    "head head"
+    "hero kpi"
+    "hero actions"
+    "content content";
+  column-gap: 12px;
+  row-gap: 10px;
+  align-items: stretch;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen > .finance-page-head {
+  grid-area: head;
+  margin-bottom: 0;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen > .finance-hero {
+  grid-area: hero;
+  min-height: 188px;
+  height: 100%;
+  margin: 0;
+  padding: 20px 21px;
+  border-radius: 20px;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen > .finance-kpi-grid {
+  grid-area: kpi;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin: 0;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen > .cash-action-grid {
+  grid-area: actions;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen > .finance-columns {
+  grid-area: content;
+  margin: 0;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .finance-kpi {
+  min-height: 76px;
+  padding: 11px 12px;
+  grid-template-columns: 34px minmax(0,1fr);
+  gap: 9px;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .finance-kpi-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .finance-kpi strong {
+  font-size: 15px;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .cash-action {
+  min-height: 82px;
+  padding: 11px;
+  grid-template-columns: 32px minmax(0,1fr);
+  gap: 8px;
+  align-items: center;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .cash-action-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .cash-action small {
+  display: none;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .finance-hero-value {
+  margin-top: 8px;
+  font-size: clamp(34px, 4.2vw, 48px);
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .finance-hero-foot {
+  margin-top: 20px;
+  padding-top: 13px;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .finance-columns {
+  display: grid;
+  grid-template-columns: minmax(0,1.22fr) minmax(280px,.78fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .section {
+  margin-top: 0;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .section-head {
+  margin-bottom: 8px;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .section-head h2 {
+  font-size: 15px;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .finance-transaction-list {
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 7px;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .finance-transaction-card {
+  grid-template-columns: 34px minmax(0,1fr) 32px;
+  gap: 8px;
+  padding: 9px 10px;
+  border-radius: 14px;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .finance-transaction-sign {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .finance-transaction-sign svg {
+  width: 18px;
+  height: 18px;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .finance-transaction-top > div > strong {
+  margin-top: 3px;
+  font-size: 12px;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .flow-badge {
+  padding: 3px 6px;
+  font-size: 8px;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .finance-amount {
+  max-width: 110px;
+  font-size: 11px;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .finance-transaction-meta {
+  margin-top: 4px;
+  font-size: 9px;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .menu-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .category-spend-list {
+  gap: 7px;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .category-spend {
+  padding: 10px 11px;
+  border-radius: 14px;
+  gap: 5px 9px;
+}
+
+.app-shell[data-layout="desktop"] .dashboard-screen .category-spend span {
+  margin-top: 2px;
+  font-size: 9px;
+}
+
+/* Slightly narrower PC/tablet canvases retain proportions instead of stretching cards. */
+@media (max-width: 1100px) {
+  .app-shell[data-layout="desktop"] {
+    grid-template-columns: 204px minmax(0,1fr);
+  }
+
+  .app-shell[data-layout="desktop"] .topbar,
+  .app-shell[data-layout="desktop"] .view {
+    width: min(calc(100% - 28px), 900px);
+  }
+
+  .app-shell[data-layout="desktop"] .dashboard-screen {
+    grid-template-columns: minmax(0,1.12fr) minmax(270px,.88fr);
+  }
+
+  .app-shell[data-layout="desktop"] .dashboard-screen .finance-columns {
+    grid-template-columns: minmax(0,1fr) minmax(250px,.72fr);
+  }
+}
+
+@media (max-height: 760px) and (min-width: 900px) {
+  .app-shell[data-layout="desktop"] .view {
+    padding-top: 12px;
+    padding-bottom: 18px;
+  }
+
+  .app-shell[data-layout="desktop"] .page-head {
+    margin-bottom: 10px;
+  }
+
+  .app-shell[data-layout="desktop"] h1 {
+    font-size: 30px;
+  }
+
+  .app-shell[data-layout="desktop"] .dashboard-screen > .finance-hero {
+    min-height: 168px;
+  }
+
+  .app-shell[data-layout="desktop"] .dashboard-screen .finance-hero-foot {
+    margin-top: 14px;
+  }
+}
