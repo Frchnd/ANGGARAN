@@ -2438,3 +2438,874 @@ body,
     padding-top: 9px;
   }
 }
+
+
+/* =========================================================
+   v0.8 FINAL DESKTOP REFERENCE
+   Desktop follows the approved Ringkasan/Transaksi reference.
+   Mobile keeps the adaptive single-column composition.
+   ========================================================= */
+
+:root {
+  --desktop-canvas: 1440px;
+  --desktop-border: #DDE2E7;
+  --desktop-soft: #F3F5F7;
+  --desktop-white: rgba(255,255,255,.94);
+}
+
+/* Header: brand + project + settings */
+.topbar {
+  min-height: 72px;
+  position: relative;
+  top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.header-brand {
+  display: none;
+}
+.header-divider {
+  display: none;
+}
+.header-settings {
+  width: 44px;
+  height: 44px;
+  margin-left: auto;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line-soft);
+  border-radius: 50%;
+  background: var(--surface-raised);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+  line-height: 0;
+}
+.header-settings svg { width: 20px; height: 20px; }
+.header-settings.active {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Bottom nav: only Ringkasan / Transaksi / Proyek */
+.bottom-nav {
+  grid-template-columns: repeat(3,minmax(0,1fr));
+}
+
+/* Custom desktop dropdowns */
+.desktop-dropdown {
+  position: relative;
+  min-width: 0;
+}
+.desktop-dropdown-trigger {
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 16px;
+  border: 1px solid var(--desktop-border);
+  border-radius: 14px;
+  background: var(--desktop-white);
+  color: var(--ink);
+  font-weight: 800;
+  text-align: left;
+}
+.desktop-dropdown-trigger span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.desktop-dropdown-trigger svg {
+  width: 17px;
+  height: 17px;
+  color: #526170;
+}
+.desktop-dropdown-menu {
+  position: absolute;
+  z-index: 70;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  min-width: 170px;
+  padding: 6px;
+  border: 1px solid var(--desktop-border);
+  border-radius: 14px;
+  background: #FFF;
+  box-shadow: 0 16px 38px rgba(20,31,43,.16);
+}
+.desktop-dropdown-menu[hidden] { display: none !important; }
+.desktop-dropdown-menu button {
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 750;
+}
+.desktop-dropdown-menu button:hover,
+.desktop-dropdown-menu button.active {
+  background: #F1F4F6;
+}
+.desktop-dropdown-menu button.active {
+  color: #9B7000;
+}
+
+/* Shared desktop typography */
+.desktop-page-title p {
+  margin: 0 0 4px;
+  color: #4F6172;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+.desktop-page-title h1 {
+  margin: 0;
+  font-size: 36px;
+  line-height: 1;
+  font-weight: 950;
+  letter-spacing: -.045em;
+}
+
+/* Desktop only */
+.app-shell[data-layout="desktop"] {
+  display: block;
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at 86% 2%, rgba(184,213,239,.18), transparent 33rem),
+    linear-gradient(135deg, #FAFBFC 0%, #F1F5F7 100%);
+}
+.app-shell[data-layout="desktop"] .main-shell {
+  min-height: 100dvh;
+  padding-bottom: 0;
+  background: transparent;
+}
+.app-shell[data-layout="desktop"] .topbar {
+  width: min(calc(100% - 64px), var(--desktop-canvas));
+  min-height: 82px;
+  margin: 0 auto;
+  padding: 16px 0;
+  border-bottom: 0;
+  background: transparent;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+.app-shell[data-layout="desktop"] .topbar::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 100vw;
+  height: 1px;
+  transform: translateX(-50%);
+  background: rgba(212,219,225,.72);
+}
+.app-shell[data-layout="desktop"] .header-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  flex: 0 0 auto;
+}
+.app-shell[data-layout="desktop"] .header-brand-mark {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px rgba(23,26,29,.05);
+  line-height: 0;
+}
+.app-shell[data-layout="desktop"] .header-brand-mark svg {
+  width: 25px;
+  height: 25px;
+  stroke-width: 2.5;
+}
+.app-shell[data-layout="desktop"] .header-brand strong {
+  font-size: 17px;
+  letter-spacing: -.025em;
+}
+.app-shell[data-layout="desktop"] .header-divider {
+  display: block;
+  width: 1px;
+  height: 44px;
+  margin: 0 22px;
+  background: #D9DFE4;
+}
+.app-shell[data-layout="desktop"] .project-switcher {
+  max-width: 360px !important;
+  padding: 2px 4px;
+}
+.app-shell[data-layout="desktop"] .project-switcher-label {
+  font-size: 9px;
+  color: #526474;
+}
+.app-shell[data-layout="desktop"] .project-switcher-value {
+  font-size: 16px;
+}
+.app-shell[data-layout="desktop"] .header-settings {
+  width: 46px;
+  height: 46px;
+  background: rgba(255,255,255,.82);
+  border-color: rgba(221,226,231,.84);
+  box-shadow: 0 4px 14px rgba(36,49,61,.06);
+}
+
+/* Wide but bounded canvas: matches reference, no edge stretching */
+.app-shell[data-layout="desktop"] .view,
+.app-shell[data-layout="desktop"][data-view="dashboard"] .view {
+  width: min(calc(100% - 64px), var(--desktop-canvas));
+  max-width: var(--desktop-canvas);
+  height: auto;
+  min-height: 0;
+  margin: 0 auto;
+  padding: 22px 0 106px;
+  overflow: visible;
+}
+
+/* Dark centered bottom navigation */
+.app-shell[data-layout="desktop"] .bottom-nav {
+  display: grid !important;
+  left: 50%;
+  right: auto;
+  bottom: 14px;
+  width: min(760px, calc(100% - 64px));
+  height: 70px;
+  transform: translateX(-50%);
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 5px;
+  padding: 7px;
+  border: 0;
+  border-radius: 24px;
+  background: linear-gradient(145deg, #14202C, #111B25);
+  box-shadow: 0 12px 34px rgba(12,24,35,.22);
+}
+.app-shell[data-layout="desktop"] .nav-button {
+  min-height: 56px;
+  border-radius: 18px;
+  font-size: 10px;
+  color: #C3D0DB;
+}
+.app-shell[data-layout="desktop"] .nav-icon {
+  width: 25px;
+  height: 25px;
+}
+.app-shell[data-layout="desktop"] .nav-icon svg {
+  width: 21px;
+  height: 21px;
+}
+.app-shell[data-layout="desktop"] .nav-button.active {
+  color: #1D2329;
+  background: linear-gradient(145deg, #FFC933, #FFBE24);
+  box-shadow: none;
+}
+.app-shell[data-layout="desktop"] .nav-button.active::after {
+  display: none;
+}
+
+/* ---------- RINGKASAN reference ---------- */
+.app-shell[data-layout="desktop"] .dashboard-reference {
+  height: calc(100dvh - 188px);
+  min-height: 720px;
+  max-height: 850px;
+  display: grid;
+  grid-template-rows: 56px 206px 188px minmax(0,1fr);
+  gap: 14px;
+  overflow: hidden;
+}
+.app-shell[data-layout="desktop"] .dashboard-reference .desktop-page-title {
+  align-self: center;
+}
+.app-shell[data-layout="desktop"] .desktop-summary-grid {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0,1.6fr) minmax(360px,1fr);
+  gap: 18px;
+}
+.app-shell[data-layout="desktop"] .desktop-hero {
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 24px;
+  border-radius: 17px;
+  box-shadow: 0 12px 26px rgba(18,30,42,.11);
+}
+.app-shell[data-layout="desktop"] .desktop-hero .finance-hero-value {
+  margin-top: 8px;
+  font-size: 44px;
+}
+.app-shell[data-layout="desktop"] .desktop-hero .finance-hero-foot {
+  margin-top: 20px;
+  padding-top: 14px;
+}
+.app-shell[data-layout="desktop"] .desktop-kpi-actions {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: 1fr 1fr .9fr;
+  gap: 9px;
+}
+.app-shell[data-layout="desktop"] .desktop-kpi-actions .finance-kpi {
+  min-height: 0;
+  height: 100%;
+  padding: 11px 15px;
+  grid-template-columns: 40px minmax(0,1fr);
+  align-items: center;
+  border: 1px solid var(--desktop-border);
+  border-radius: 15px;
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 5px 16px rgba(31,45,57,.055);
+}
+.app-shell[data-layout="desktop"] .desktop-kpi-actions .finance-kpi-icon {
+  width: 38px;
+  height: 38px;
+}
+.app-shell[data-layout="desktop"] .desktop-kpi-actions .finance-kpi > div > span {
+  font-size: 10px;
+}
+.app-shell[data-layout="desktop"] .desktop-kpi-actions .finance-kpi strong {
+  margin-top: 1px;
+  font-size: 17px;
+}
+.app-shell[data-layout="desktop"] .desktop-kpi-actions .finance-kpi small {
+  margin-top: 2px;
+  font-size: 9px;
+}
+.app-shell[data-layout="desktop"] .desktop-action-pair {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 9px;
+}
+.app-shell[data-layout="desktop"] .desktop-action-pair .cash-action {
+  min-height: 0;
+  height: 100%;
+  padding: 9px 14px;
+  grid-template-columns: 36px minmax(0,1fr);
+  align-items: center;
+  border-radius: 15px;
+  background: rgba(255,255,255,.86);
+  box-shadow: 0 5px 16px rgba(31,45,57,.055);
+}
+.app-shell[data-layout="desktop"] .desktop-action-pair .cash-action.income {
+  border-color: #CDDCD4;
+  color: #176A4E;
+}
+.app-shell[data-layout="desktop"] .desktop-action-pair .cash-action.expense {
+  border-color: #E1D1D0;
+  color: #8D2C2C;
+}
+.app-shell[data-layout="desktop"] .desktop-action-pair .cash-action-icon {
+  width: 34px;
+  height: 34px;
+}
+.app-shell[data-layout="desktop"] .desktop-action-pair strong {
+  font-size: 14px;
+}
+
+.app-shell[data-layout="desktop"] .desktop-secondary-grid {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0,1.58fr) minmax(330px,1fr);
+  gap: 18px;
+}
+.app-shell[data-layout="desktop"] .desktop-panel {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.app-shell[data-layout="desktop"] .desktop-panel .section-head {
+  min-height: 30px;
+  margin-bottom: 7px;
+}
+.app-shell[data-layout="desktop"] .desktop-panel .section-head h2 {
+  font-size: 17px;
+}
+.app-shell[data-layout="desktop"] .desktop-panel .text-button {
+  color: #506A80;
+  font-size: 11px;
+}
+.app-shell[data-layout="desktop"] .desktop-empty {
+  min-height: 0;
+  flex: 1;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  padding: 16px;
+  border: 1px solid var(--desktop-border);
+  border-radius: 14px;
+  background: rgba(255,255,255,.91);
+  text-align: center;
+}
+.app-shell[data-layout="desktop"] .desktop-empty .empty-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 0 8px;
+  border-radius: 50%;
+}
+.app-shell[data-layout="desktop"] .desktop-empty .muted-icon {
+  background: #EEF2F5;
+  color: #526579;
+  box-shadow: none;
+}
+.app-shell[data-layout="desktop"] .desktop-empty strong {
+  font-size: 13px;
+}
+.app-shell[data-layout="desktop"] .desktop-empty span {
+  margin-top: 5px;
+  color: #758391;
+  font-size: 10px;
+}
+.app-shell[data-layout="desktop"] .desktop-recent-list {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  display: grid;
+  gap: 6px;
+}
+.app-shell[data-layout="desktop"] .compact-transaction {
+  width: 100%;
+  min-width: 0;
+  min-height: 49px;
+  display: grid;
+  grid-template-columns: 34px minmax(0,1fr) auto;
+  gap: 9px;
+  align-items: center;
+  padding: 6px 10px;
+  border: 1px solid var(--desktop-border);
+  border-radius: 12px;
+  background: rgba(255,255,255,.92);
+  text-align: left;
+}
+.app-shell[data-layout="desktop"] .compact-flow-icon {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+}
+.app-shell[data-layout="desktop"] .compact-flow-icon.income { color: var(--income); background: var(--income-bg); }
+.app-shell[data-layout="desktop"] .compact-flow-icon.expense { color: var(--expense); background: var(--expense-bg); }
+.app-shell[data-layout="desktop"] .compact-flow-icon svg { width: 17px; height: 17px; }
+.app-shell[data-layout="desktop"] .compact-transaction > span:nth-child(2) { min-width: 0; }
+.app-shell[data-layout="desktop"] .compact-transaction > span:nth-child(2) strong {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 11px;
+}
+.app-shell[data-layout="desktop"] .compact-transaction small {
+  display: block;
+  margin-top: 2px;
+  color: #768593;
+  font-size: 9px;
+}
+.app-shell[data-layout="desktop"] .compact-transaction > strong {
+  font-size: 10px;
+  white-space: nowrap;
+}
+.income-text { color: var(--income); }
+.expense-text { color: var(--expense); }
+
+.app-shell[data-layout="desktop"] .desktop-panel .category-spend-list {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  gap: 6px;
+}
+.app-shell[data-layout="desktop"] .desktop-panel .category-spend {
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.92);
+}
+
+/* Semua Transaksi block */
+.app-shell[data-layout="desktop"] .desktop-all-transactions {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.app-shell[data-layout="desktop"] .desktop-all-head {
+  min-height: 48px;
+  display: grid;
+  grid-template-columns: auto minmax(500px,1fr);
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 7px;
+}
+.app-shell[data-layout="desktop"] .desktop-all-head h2 {
+  font-size: 17px;
+}
+.app-shell[data-layout="desktop"] .desktop-inline-tools {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(260px,1fr) 360px;
+  gap: 10px;
+}
+.app-shell[data-layout="desktop"] .desktop-search input {
+  height: 44px;
+  border-color: var(--desktop-border);
+  border-radius: 12px;
+  background: rgba(255,255,255,.9);
+  font-size: 11px;
+}
+.app-shell[data-layout="desktop"] .desktop-type-filter {
+  min-width: 0;
+  height: 44px;
+  padding: 3px;
+  border-color: var(--desktop-border);
+  background: #F1F3F5;
+}
+.app-shell[data-layout="desktop"] .desktop-type-filter button {
+  min-height: 36px;
+  font-size: 11px;
+}
+.app-shell[data-layout="desktop"] .desktop-type-filter button.active {
+  background: linear-gradient(145deg, #FFC932, #FFBE22);
+  color: #171A1D;
+}
+
+/* Desktop table */
+.app-shell[data-layout="desktop"] .desktop-table-shell {
+  min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--desktop-border);
+  border-radius: 13px;
+  background: rgba(255,255,255,.94);
+}
+.app-shell[data-layout="desktop"] .desktop-table-head,
+.app-shell[data-layout="desktop"] .desktop-table-row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 120px minmax(180px,1.5fr) minmax(110px,1fr) 90px 130px 52px;
+  gap: 10px;
+  align-items: center;
+  padding: 0 15px;
+}
+.app-shell[data-layout="desktop"] .desktop-table-head.with-balance,
+.app-shell[data-layout="desktop"] .desktop-table-row.with-balance {
+  grid-template-columns: 115px minmax(170px,1.45fr) minmax(100px,.9fr) 85px 120px 120px 48px;
+}
+.app-shell[data-layout="desktop"] .desktop-table-head.with-project,
+.app-shell[data-layout="desktop"] .desktop-table-row.with-project {
+  grid-template-columns: 110px minmax(170px,1.4fr) minmax(100px,.8fr) minmax(100px,.8fr) 80px 120px 48px;
+}
+.app-shell[data-layout="desktop"] .desktop-table-head {
+  min-height: 42px;
+  background: #F3F5F6;
+  border-bottom: 1px solid #E2E6EA;
+  color: #344351;
+  font-size: 10px;
+  font-weight: 900;
+}
+.app-shell[data-layout="desktop"] .desktop-table-body {
+  min-height: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+.app-shell[data-layout="desktop"] .desktop-table-row {
+  min-height: 43px;
+  border-bottom: 1px solid #EEF1F3;
+  color: #52616E;
+  font-size: 10px;
+}
+.app-shell[data-layout="desktop"] .desktop-table-row:last-child { border-bottom: 0; }
+.app-shell[data-layout="desktop"] .desktop-table-row > * {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app-shell[data-layout="desktop"] .desktop-table-row > strong {
+  color: #1D2832;
+}
+.app-shell[data-layout="desktop"] .table-type {
+  display: inline-flex;
+  padding: 4px 7px;
+  border-radius: 999px;
+  font-style: normal;
+  font-size: 8px;
+  font-weight: 900;
+}
+.app-shell[data-layout="desktop"] .table-type.income { color: var(--income); background: var(--income-bg); }
+.app-shell[data-layout="desktop"] .table-type.expense { color: var(--expense); background: var(--expense-bg); }
+.app-shell[data-layout="desktop"] .table-menu {
+  width: 30px;
+  height: 30px;
+  justify-self: end;
+  background: transparent;
+}
+.app-shell[data-layout="desktop"] .desktop-table-empty {
+  min-height: 0;
+  flex: 1;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+}
+.app-shell[data-layout="desktop"] .desktop-table-empty .empty-icon {
+  width: 46px;
+  height: 46px;
+  margin: 0 0 8px;
+}
+.app-shell[data-layout="desktop"] .desktop-table-empty strong { font-size: 13px; }
+.app-shell[data-layout="desktop"] .desktop-table-empty span {
+  margin-top: 5px;
+  color: #7A8895;
+  font-size: 10px;
+}
+
+/* ---------- TRANSAKSI reference ---------- */
+.app-shell[data-layout="desktop"] .transactions-reference {
+  height: calc(100dvh - 188px);
+  min-height: 700px;
+  max-height: 850px;
+  display: grid;
+  grid-template-rows: 118px 78px 58px minmax(0,1fr);
+  gap: 14px;
+  overflow: visible;
+}
+.app-shell[data-layout="desktop"] .desktop-transactions-top {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(300px,.92fr) minmax(650px,1.45fr);
+  gap: 38px;
+  align-items: start;
+}
+.app-shell[data-layout="desktop"] .desktop-transactions-top .desktop-page-title {
+  align-self: center;
+}
+.app-shell[data-layout="desktop"] .desktop-search-filters {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(300px,1fr) 140px 210px;
+  grid-template-rows: 48px 48px;
+  gap: 8px 10px;
+}
+.app-shell[data-layout="desktop"] .desktop-search-filters .desktop-search {
+  grid-column: 1;
+  grid-row: 1;
+}
+.app-shell[data-layout="desktop"] .desktop-search-filters > .desktop-dropdown {
+  grid-column: 2;
+  grid-row: 1;
+}
+.app-shell[data-layout="desktop"] .desktop-date-stack {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  display: grid;
+  gap: 8px;
+}
+.app-shell[data-layout="desktop"] .desktop-date-button {
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  display: grid;
+  grid-template-columns: 22px minmax(0,1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border: 1px solid var(--desktop-border);
+  border-radius: 14px;
+  background: rgba(255,255,255,.9);
+  color: #617282;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 750;
+}
+.app-shell[data-layout="desktop"] .desktop-date-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.app-shell[data-layout="desktop"] .desktop-metrics-row {
+  width: min(72%, 980px);
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 12px;
+}
+.app-shell[data-layout="desktop"] .desktop-metric {
+  min-width: 0;
+  padding: 13px 20px;
+  border: 1px solid var(--desktop-border);
+  border-radius: 14px;
+  background: rgba(255,255,255,.9);
+  box-shadow: 0 4px 14px rgba(35,48,60,.04);
+}
+.app-shell[data-layout="desktop"] .desktop-metric span {
+  display: block;
+  color: #526474;
+  font-size: 10px;
+  font-weight: 900;
+}
+.app-shell[data-layout="desktop"] .desktop-metric strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 18px;
+}
+.app-shell[data-layout="desktop"] .desktop-metric.income strong { color: #148047; }
+.app-shell[data-layout="desktop"] .desktop-metric.expense strong { color: #D12727; }
+
+.app-shell[data-layout="desktop"] .desktop-transaction-controls {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 330px minmax(180px,230px) minmax(150px,190px) minmax(340px,1fr);
+  gap: 12px;
+  align-items: center;
+}
+.app-shell[data-layout="desktop"] .desktop-three-filter {
+  height: 48px;
+  padding: 3px;
+  border: 0;
+  background: transparent;
+  gap: 8px;
+}
+.app-shell[data-layout="desktop"] .desktop-three-filter button {
+  min-height: 42px;
+  border: 1px solid var(--desktop-border);
+  border-radius: 13px;
+  background: rgba(255,255,255,.82);
+  color: #3D4F5F;
+}
+.app-shell[data-layout="desktop"] .desktop-three-filter button.active {
+  border-color: transparent;
+  background: linear-gradient(145deg, #FFC932, #FFBE22);
+  color: #171A1D;
+}
+.app-shell[data-layout="desktop"] .desktop-action-buttons {
+  justify-self: end;
+  display: grid;
+  grid-template-columns: repeat(2,180px);
+  gap: 10px;
+}
+.app-shell[data-layout="desktop"] .desktop-income-button,
+.app-shell[data-layout="desktop"] .desktop-expense-button {
+  height: 48px;
+  border: 0;
+  border-radius: 13px;
+  color: white;
+  font-size: 13px;
+  font-weight: 900;
+}
+.app-shell[data-layout="desktop"] .desktop-income-button { background: #158447; }
+.app-shell[data-layout="desktop"] .desktop-expense-button { background: #DA111B; }
+
+/* Proyek and Pengaturan adapt to same desktop canvas, without forcing reference table layout */
+.app-shell[data-layout="desktop"][data-view="projects"] .view,
+.app-shell[data-layout="desktop"][data-view="settings"] .view {
+  width: min(calc(100% - 64px), 1120px);
+  max-width: 1120px;
+  padding-top: 28px;
+}
+.app-shell[data-layout="desktop"][data-view="projects"] .project-finance-list {
+  grid-template-columns: repeat(2,minmax(0,1fr));
+}
+
+/* Desktop sheets stay centered */
+.app-shell[data-layout="desktop"] .sheet {
+  width: min(620px, calc(100vw - 48px));
+  margin: auto;
+  border-radius: 26px;
+}
+.app-shell[data-layout="desktop"] .overlay {
+  align-items: center;
+  padding: 24px;
+}
+.app-shell[data-layout="desktop"] .sheet::before { display: none; }
+
+/* Short/medium desktop heights: preserve single-screen structure */
+@media (max-height: 850px) and (min-width: 700px) {
+  .app-shell[data-layout="desktop"] .dashboard-reference {
+    height: calc(100dvh - 176px);
+    min-height: 620px;
+    grid-template-rows: 48px 178px 160px minmax(0,1fr);
+    gap: 10px;
+  }
+  .app-shell[data-layout="desktop"] .transactions-reference {
+    height: calc(100dvh - 176px);
+    min-height: 610px;
+    grid-template-rows: 102px 68px 52px minmax(0,1fr);
+    gap: 10px;
+  }
+  .app-shell[data-layout="desktop"] .desktop-hero {
+    padding: 18px 20px;
+  }
+  .app-shell[data-layout="desktop"] .desktop-hero .finance-hero-value {
+    font-size: 38px;
+  }
+  .app-shell[data-layout="desktop"] .desktop-hero .finance-hero-foot {
+    margin-top: 12px;
+  }
+  .app-shell[data-layout="desktop"] .desktop-panel .section-head {
+    min-height: 25px;
+    margin-bottom: 5px;
+  }
+  .app-shell[data-layout="desktop"] .desktop-all-head {
+    min-height: 42px;
+    margin-bottom: 5px;
+  }
+}
+
+/* Tablet in automatic PC mode: same language, reduced width, still not mobile UI */
+@media (min-width: 700px) and (max-width: 1050px) {
+  .app-shell[data-layout="desktop"] .topbar,
+  .app-shell[data-layout="desktop"] .view,
+  .app-shell[data-layout="desktop"][data-view="dashboard"] .view {
+    width: min(calc(100% - 32px), 980px);
+  }
+  .app-shell[data-layout="desktop"] .desktop-summary-grid {
+    grid-template-columns: minmax(0,1.28fr) minmax(300px,.9fr);
+    gap: 10px;
+  }
+  .app-shell[data-layout="desktop"] .desktop-secondary-grid {
+    grid-template-columns: minmax(0,1.25fr) minmax(280px,.85fr);
+    gap: 10px;
+  }
+  .app-shell[data-layout="desktop"] .desktop-all-head {
+    grid-template-columns: auto minmax(420px,1fr);
+    gap: 10px;
+  }
+  .app-shell[data-layout="desktop"] .desktop-inline-tools {
+    grid-template-columns: minmax(220px,1fr) 300px;
+  }
+  .app-shell[data-layout="desktop"] .desktop-transactions-top {
+    grid-template-columns: 240px minmax(0,1fr);
+    gap: 20px;
+  }
+  .app-shell[data-layout="desktop"] .desktop-search-filters {
+    grid-template-columns: minmax(220px,1fr) 120px 175px;
+  }
+  .app-shell[data-layout="desktop"] .desktop-transaction-controls {
+    grid-template-columns: 260px 170px 130px minmax(270px,1fr);
+    gap: 8px;
+  }
+  .app-shell[data-layout="desktop"] .desktop-action-buttons {
+    grid-template-columns: repeat(2,135px);
+    gap: 7px;
+  }
+}
+
+/* Mobile: brand text does not crowd project selector, settings remains reachable */
+@media (max-width: 699px) {
+  .header-brand,
+  .header-divider { display: none !important; }
+  .header-settings {
+    width: 42px;
+    height: 42px;
+  }
+  .bottom-nav {
+    grid-template-columns: repeat(3,minmax(0,1fr));
+  }
+}
