@@ -266,7 +266,7 @@ function renderDesktopDashboard() {
   const spending = categoryTotals(transactions, 'expense').slice(0, 4);
   const resultClass = metrics.profitLoss > 0 ? 'profit' : metrics.profitLoss < 0 ? 'loss' : 'neutral';
   const resultLabel = metrics.profitLoss > 0 ? 'UNTUNG SEMENTARA' : metrics.profitLoss < 0 ? 'RUGI SEMENTARA' : 'UNTUNG / RUGI';
-  const filtered = filteredProjectTransactions();
+  const filtered = filteredProjectTransactions({ category: true, dates: false, sort: false });
 
   return `
     <div class="desktop-reference dashboard-reference">
@@ -347,20 +347,27 @@ function renderCompactTransaction(transaction) {
   </button>`;
 }
 
-function filteredProjectTransactions() {
+function filteredProjectTransactions(options = {}) {
+  const useCategory = options.category !== false;
+  const useDates = options.dates !== false;
+  const useSort = options.sort !== false;
   const query = state.search.trim().toLocaleLowerCase('id');
-  const from = state.dateFrom || '';
-  const to = state.dateTo || '';
+  const from = useDates ? (state.dateFrom || '') : '';
+  const to = useDates ? (state.dateTo || '') : '';
+
   let rows = projectTransactions().filter(transaction => {
     const matchesType = state.flowFilter === 'all' || transaction.type === state.flowFilter;
-    const matchesCategory = state.categoryFilter === 'all' || transaction.category === state.categoryFilter;
+    const matchesCategory = !useCategory || state.categoryFilter === 'all' || transaction.category === state.categoryFilter;
     const haystack = `${transaction.description || ''} ${transaction.category || ''}`.toLocaleLowerCase('id');
     const matchesSearch = !query || haystack.includes(query);
     const matchesFrom = !from || transaction.date >= from;
     const matchesTo = !to || transaction.date <= to;
     return matchesType && matchesCategory && matchesSearch && matchesFrom && matchesTo;
   });
-  if (state.sortOrder === 'oldest') rows = [...rows].sort((a,b) => `${a.date}${a.createdAt || ''}`.localeCompare(`${b.date}${b.createdAt || ''}`));
+
+  if (useSort && state.sortOrder === 'oldest') {
+    rows = [...rows].sort((a,b) => `${a.date}${a.createdAt || ''}`.localeCompare(`${b.date}${b.createdAt || ''}`));
+  }
   return rows;
 }
 
@@ -407,7 +414,7 @@ function renderTransactions() {
 
 function renderMobileTransactions() {
   const all = projectTransactions();
-  const filtered = filteredProjectTransactions();
+  const filtered = filteredProjectTransactions({ category: false, dates: false, sort: false });
   const metrics = projectMetrics();
   return `
     <div class="page-head"><div><p class="eyebrow">Keluar masuk duit</p><h1>Transaksi</h1></div></div>
@@ -669,7 +676,12 @@ function bindViewEvents() {
 function navigate(view) {
   state.view = view;
   state.search = '';
-  if (view !== 'transactions') state.flowFilter = 'all';
+  if (view !== 'transactions') {
+    state.flowFilter = 'all';
+    state.dateFrom = '';
+    state.dateTo = '';
+    state.sortOrder = 'newest';
+  }
   render();
   window.scrollTo({ top: 0, behavior: 'auto' });
 }
