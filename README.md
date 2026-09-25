@@ -1,4 +1,4 @@
-# ANGGARAN v0.7.1
+# ANGGARAN v0.7.2
 
 ANGGARAN sekarang difokuskan sebagai aplikasi pencatatan keuangan per project.
 
@@ -89,3 +89,12 @@ v0.7 mengubah total fokus aplikasi dari RAB/realisasi barang menjadi pencatatan 
 - Tombol tambah project di header tab Proyek dihapus. Satu jalur tambah project tetap melalui tombol + Project baru.
 - Mode PC memakai canvas terpusat maksimum 1000px agar tidak stretch mengikuti monitor.
 - Layout Mobile pada tablet/layar touch >=700px dibatasi maksimum 680px agar card tidak melebar.
+
+
+## v0.7.2 screenshot-driven UI fixes
+- Header project tidak sticky lagi dan ikut naik saat halaman discroll.
+- Navigasi sidebar PC diposisikan di bagian bawah sidebar.
+- Ringkasan PC dibatasi satu viewport; daftar panjang memakai scroll internal.
+- Zoom pinch, Ctrl/Cmd +/-, dan gesture zoom dinonaktifkan.
+- Tombol + di header atas dihapus sepenuhnya.
+- Tambah project tetap hanya melalui tombol + Project baru pada tab Proyek.
